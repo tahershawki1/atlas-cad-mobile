@@ -64,6 +64,8 @@ export interface ToolHost {
   baseProps(): Pick<Entity, 'layer' | 'aci' | 'rgb' | 'lineType' | 'lineWeight' | 'transparency'>;
   /** prompt the user for free text (async dialog) */
   askText(title: string, initial?: string, multiline?: boolean): Promise<string | null>;
+  /** ask before committing optional results to the drawing */
+  confirm(title: string, message: string, okLabel?: string): Promise<boolean>;
   ortho(): boolean;
 }
 

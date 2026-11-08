@@ -232,6 +232,7 @@ export class PointCoordsTool extends Tool {
   wantsSnap = true;
   private last: Vec2 | null = null;
   private placed: Vec2[] = [];
+  private finishing = false;
   protected onActivate() { this.setPrompt('Pick points to read coordinates (X, Y). Enter = finish.'); }
   reset() { this.last = null; this.placed = []; }
   private labelText(p: Vec2) {
@@ -254,8 +255,44 @@ export class PointCoordsTool extends Tool {
     this.host.notify(`P: ${text}`, 'success');
     this.setPrompt(`Last: X ${p.x.toFixed(3)}  Y ${p.y.toFixed(3)} · pick another`);
   }
-  enter() { this.host.finish(); }
-  escape() { this.host.finish(); }
+  private async finishAndAsk() {
+    if (this.finishing) return;
+    const points = this.placed.slice();
+    if (!points.length) { this.host.finish(); return; }
+    this.finishing = true;
+    try {
+      const save = await this.host.confirm('Save coordinate markers?', `Keep ${points.length} coordinate marker(s) in this drawing?`, 'Save');
+      if (save) {
+        const ents = points.flatMap((p, i) => this.makeMarker(p, i));
+        if (this.host.doc.add(ents, 'Add coordinate markers')) this.host.notify(`${points.length} coordinate marker(s) saved in the drawing`, 'success');
+      }
+      this.host.finish();
+    } finally {
+      this.finishing = false;
+    }
+  }
+  enter() { void this.finishAndAsk(); }
+  escape() { void this.finishAndAsk(); }
+  private makeMarker(p: Vec2, index: number): Entity[] {
+    // Size text and frame in drawing units so the annotation remains readable
+    // at the current zoom. The geometry itself becomes normal editable CAD data.
+    const h = Math.max(this.host.pickTol(12), 1e-5);
+    const gap = h * 0.8;
+    const x = p.x + h * 2.2;
+    const y = p.y + h * 1.2;
+    const width = h * 12.5;
+    const height = h * 3.2;
+    const left = x, bottom = y, right = x + width, top = y + height;
+    const color = { ...this.host.baseProps(), aci: undefined, rgb: 0x33d6ff };
+    const id = () => this.host.doc.newId();
+    const text = this.labelText(p).split('\n');
+    return [
+      { id: id(), ...color, type: 'leader', pts: [p.x, p.y, left, bottom + height / 2], arrow: true, arrowSize: h * 0.7 } as Entity,
+      { id: id(), ...color, type: 'polyline', pts: [left, bottom, right, bottom, right, top, left, top], closed: true } as Entity,
+      { id: id(), ...color, type: 'text', p: { x: left + gap, y: bottom + height * 0.57 }, h: h * 0.72, rot: 0, value: text[0] } as Entity,
+      { id: id(), ...color, type: 'text', p: { x: left + gap, y: bottom + height * 0.18 }, h: h * 0.72, rot: 0, value: text[1] ?? '' } as Entity,
+    ];
+  }
   private drawPointLabel(ctx: CanvasRenderingContext2D, cam: Camera, p: Vec2, i: number, preview = false) {
     const s = cam.worldToScreen(p.x, p.y);
     const ox = 24 + (i % 2) * 12;

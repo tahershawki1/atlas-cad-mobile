@@ -8,7 +8,7 @@ import { readCadFile } from '../cad/io/cadClient';
 import { registerTools } from '../cad/tools/registry';
 import { SelectTool } from '../cad/tools/SelectTool';
 import { useApp } from './store';
-import { askText } from './dialogs';
+import { askText, confirmDialog } from './dialogs';
 import { useGps } from '../gps/gpsStore';
 import { isUsable } from '../geo/calibration';
 import { guessProjectedFromExtents } from '../geo/crs';
@@ -61,6 +61,7 @@ export class AppController {
       pickTol: (px = 8) => px / view.cam.scale,
       baseProps: () => this.baseProps(),
       askText: (title, initial, multiline) => askText(title, initial, multiline),
+      confirm: (title, message, okLabel) => confirmDialog(title, message, false, okLabel ?? 'Save'),
       ortho: () => useApp.getState().ortho,
     };
     const tm = new ToolManager(view, host, host2, {

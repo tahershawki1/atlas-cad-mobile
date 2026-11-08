@@ -52,7 +52,11 @@ export function installAtlasNativeHandlers() {
     },
     onBack: () => {
       const st = useApp.getState();
-      if (app.tools?.active && app.tools.active.id !== 'select') { app.setTool('select'); return true; }
+      if (app.tools?.active && app.tools.active.id !== 'select') {
+        if (app.tools.active.id === 'mcoords') app.tools.active.escape();
+        else app.setTool('select');
+        return true;
+      }
       if (st.panel) { st.set({ panel: null }); return true; }
       if (st.infoEntity !== null) { st.set({ infoEntity: null }); return true; }
       return false;
