@@ -20,6 +20,7 @@ export function LayersPanel() {
   const style = useApp((s) => s.style);
   const [q, setQ] = useState('');
   const [open, setOpen] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'hidden' | 'visible'>('name');
   const doc = app.doc;
   const counts = useMemo(() => {
     const m = new Map<string, number>();
@@ -27,7 +28,14 @@ export function LayersPanel() {
     return m;
   }, [rev, doc]);
   if (!doc) return null;
-  const layers = doc.drawing.layers.filter((l) => !q || l.name.toLowerCase().includes(q.toLowerCase()));
+  // hidden = off or frozen (not drawn on screen)
+  const isHidden = (l: Layer) => !l.on || l.frozen;
+  const byName = (a: Layer, b: Layer) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+  const layers = doc.drawing.layers.filter((l) => !q || l.name.toLowerCase().includes(q.toLowerCase())).sort((a, b) => {
+    if (sortBy === 'name') return byName(a, b);
+    const d = (isHidden(b) ? 1 : 0) - (isHidden(a) ? 1 : 0); // hidden-first: hidden before visible
+    return (sortBy === 'hidden' ? d : -d) || byName(a, b);
+  });
   const editable = can('cad.edit');
 
   const update = (name: string, patch: Partial<Layer>, label = 'Layer change') => {
@@ -96,6 +104,12 @@ export function LayersPanel() {
         {editable && <button className="btn" onClick={newLayer} title="New layer"><Icon name="plus" /></button>}
       </div>
       <div className="row wrap" style={{ marginBottom: 8, gap: 6 }}>
+        <span className="muted small" style={{ alignSelf: 'center' }}>Sort:</span>
+        <button className={`btn sm ${sortBy === 'name' ? 'primary' : ''}`} title="Sort by name" onClick={() => setSortBy('name')}>A–Z</button>
+        <button className={`btn sm ${sortBy === 'hidden' ? 'primary' : ''}`} title="Hidden layers first" onClick={() => setSortBy('hidden')}><Icon name="eyeoff" /> Hidden first</button>
+        <button className={`btn sm ${sortBy === 'visible' ? 'primary' : ''}`} title="Visible layers first" onClick={() => setSortBy('visible')}><Icon name="eye" /> Visible first</button>
+      </div>
+      <div className="row wrap" style={{ marginBottom: 8, gap: 6 }}>
         <button className="btn sm" onClick={() => setAll({ on: true, frozen: false })}>All on</button>
         <button className="btn sm" onClick={unisolate}>Unisolate</button>
         <button className="btn sm" onClick={() => setAll({ locked: false })}>Unlock all</button>
@@ -116,10 +130,18 @@ export function LayersPanel() {
               </button>
               <span className="swatch" style={{ background: layerColorCss(l, dark) }} onClick={() => setOpen(open === l.name ? null : l.name)} />
               <div className="grow" style={{ overflow: 'hidden' }} onClick={() => setOpen(open === l.name ? null : l.name)} onDoubleClick={() => useApp.getState().set({ style: { ...style, layer: l.name } })}>
-                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: l.on && !l.frozen ? 1 : 0.5 }} dir="auto">{l.name}</div>
+                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: l.on && !l.frozen ? 1 : 0.5 }} dir="auto">
+                  {(counts.get(l.name) ?? 0) > 0
+                    ? <span title="Layer is used (has objects)" style={{ color: '#35c26e', marginRight: 5 }}>●</span>
+                    : <span title="Empty layer (no objects)" style={{ color: 'var(--muted)', marginRight: 5, opacity: 0.8 }}>○</span>}
+                  {l.name}
+                </div>
                 <div className="small muted">{counts.get(l.name) ?? 0} obj · {l.lineType} · {lwLabel(l.lineWeight)}{l.transparency ? ` · ${Math.round(l.transparency * 100)}%` : ''}</div>
               </div>
               <button className="icon-btn" style={{ minWidth: 34, height: 34 }} title="Zoom to layer" onClick={() => zoomLayer(l.name)}><Icon name="zoomin" /></button>
+              {editable && (
+                <button className="icon-btn" style={{ minWidth: 34, height: 34, color: 'var(--danger, #e5534b)' }} title="Delete layer" onClick={() => del(l)}><Icon name="trash" /></button>
+              )}
             </div>
             {open === l.name && (
               <div className="card" style={{ margin: '6px 0 10px' }}>
