@@ -10,8 +10,19 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('atlas-') && k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim()),
+      .then((keys) => {
+        const old = keys.filter((k) => k.startsWith('atlas-') && k !== CACHE);
+        return Promise.all(old.map((k) => caches.delete(k))).then(() => old.length > 0);
+      })
+      .then((hadOldCache) => self.clients.claim().then(() => hadOldCache))
+      .then((hadOldCache) => {
+        if (!hadOldCache) return;
+        // Existing tabs may still be showing the previous bundle. Reload them
+        // once the new worker controls the page so the update is truly automatic.
+        return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) =>
+          Promise.all(clients.map((client) => client.navigate(client.url).catch(() => {}))),
+        );
+      }),
   );
 });
 
