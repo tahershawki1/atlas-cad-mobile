@@ -148,6 +148,9 @@ export class ToolManager {
     if (this.pointers.size === 2) {
       // start pinch, cancel single-pointer action
       clearTimeout(this.longPressTimer);
+      // A two-finger gesture is an explicit navigation gesture. Cancel any
+      // active command first so a stray second finger cannot commit geometry.
+      if (this.active?.id !== 'select') this.active?.escape();
       const [a, b] = [...this.pointers.values()];
       this.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
       if (this.down) this.down.mode = 'pinch';
@@ -157,7 +160,6 @@ export class ToolManager {
     const ev = this.makeEvent(e);
     this.down = { ev, x: e.clientX, y: e.clientY, t: performance.now(), button: e.button, moved: false, mode: 'none' };
     if (e.button === 1 || e.button === 2 || this.view.layout) { this.down.mode = 'pan'; return; }
-    this.active?.down(ev);
     if (e.pointerType === 'touch' && this.active && this.active.id !== 'select' && !this.active.wantsDrag) {
       this.longPressTimer = setTimeout(() => {
         if (this.down && !this.down.moved && this.pointers.size === 1) {
@@ -173,8 +175,17 @@ export class ToolManager {
     if (e.pointerType === 'touch' && this.active?.id === 'select') {
       this.longPressArmed = false;
       this.longPressTimer = setTimeout(() => {
-        if (this.down && !this.down.moved) { this.longPressArmed = true; navigator.vibrate?.(20); this.down.mode = 'drag'; }
+        if (this.down && !this.down.moved) {
+          // Touch safety: a grip/window drag starts only after a deliberate
+          // long press. A normal tap must never move a CAD grip accidentally.
+          this.longPressArmed = true;
+          navigator.vibrate?.(20);
+          this.down.mode = 'drag';
+          this.active?.down(this.down.ev);
+        }
       }, 450);
+    } else {
+      this.active?.down(ev);
     }
   };
 
