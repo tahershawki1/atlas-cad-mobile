@@ -7,10 +7,16 @@ Usage (from repo root, e.g. atlas-cad-mobile/):
   python3 tools/ci-watch.py --workflow pages.yml --timeout-minutes 20
   python3 tools/ci-watch.py --json --log-lines 200 > /tmp/run.json 2> /tmp/run.log
 
-Auth (pick one):
+Git via SSH (always):
+  Remote is `git@github.com:owner/repo.git`. Push/pull/ls-remote already use
+  SSH key (`~/.ssh/id_ed25519`). Script verifies SSH first:
+  `ssh -T git@github.com` + `git ls-remote origin HEAD`.
+
+Actions API via HTTPS token (GitHub API has no SSH transport):
   1) GH_TOKEN env var  (preferred on this phone, no gh CLI needed)
        export GH_TOKEN=ghp_...      # fine-grained PAT: repo scope, Actions read
   2) gh CLI logged in (gh auth login) — script auto-detects and uses it
+  Use `--no-ssh` to skip SSH preflight (e.g. testing).
 
 Exit codes:
   0  all filtered runs succeeded
@@ -64,6 +70,39 @@ def git_head_sha() -> str:
         ).stdout.strip()
     except Exception:
         return ""
+
+
+def remote_head_sha() -> str:
+    """Get remote HEAD SHA via SSH git (git ls-remote). No API needed."""
+    try:
+        r = subprocess.run(
+            ["git", "ls-remote", "origin", "HEAD"],
+            capture_output=True, text=True, timeout=20,
+        )
+        if r.returncode == 0:
+            parts = r.stdout.strip().split()
+            if parts:
+                return parts[0]
+    except Exception:
+        pass
+    return ""
+
+
+def check_ssh() -> tuple[bool, str]:
+    """Verify SSH auth to GitHub. Returns (ok, detail)."""
+    try:
+        p = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
+             "-T", "git@github.com"],
+            capture_output=True, text=True, timeout=15,
+        )
+        out = (p.stdout + p.stderr).strip()
+        m = re.search(r"Hi ([A-Za-z0-9-]+)!", out)
+        if m:
+            return True, f"ssh ok (github user={m.group(1)})"
+        return False, f"ssh failed: {out[:200]}"
+    except Exception as e:
+        return False, f"ssh check error: {e}"
 
 
 def get_token() -> tuple[str, str]:
@@ -189,6 +228,7 @@ def main() -> int:
     ap.add_argument("--log-lines", type=int, default=300)
     ap.add_argument("--once", action="store_true", help="check once, do not wait")
     ap.add_argument("--json", action="store_true", help="emit JSON summary to stdout")
+    ap.add_argument("--no-ssh", action="store_true", help="skip SSH preflight (default: SSH check on)")
     args = ap.parse_args()
 
     repo = args.repo or git_remote_repo() or ""
@@ -197,6 +237,25 @@ def main() -> int:
         return 3
     branch = args.branch or git_current_branch()
     sha = args.sha or git_head_sha()
+
+    # --- SSH preflight (git over SSH; uses user's existing key) ---
+    if not args.no_ssh:
+        ok, detail = check_ssh()
+        if ok:
+            print(f"[ci-watch] {detail}", file=sys.stderr)
+        else:
+            print(f"[ci-watch] SSH check failed: {detail}", file=sys.stderr)
+            print("  Git operations (push/pull/ls-remote) need SSH. "
+                  "Fix ~/.ssh/id_ed25519 or pass --no-ssh.", file=sys.stderr)
+        rsha = remote_head_sha()
+        if rsha and sha:
+            if rsha == sha:
+                print(f"[ci-watch] remote HEAD (via SSH ls-remote) == local HEAD {sha[:12]} ✓",
+                      file=sys.stderr)
+            else:
+                print(f"[ci-watch] remote HEAD {rsha[:12]} != local HEAD {sha[:12]} — "
+                      f"push first: git push origin {branch}", file=sys.stderr)
+
     token, src = get_token()
 
     if not token:

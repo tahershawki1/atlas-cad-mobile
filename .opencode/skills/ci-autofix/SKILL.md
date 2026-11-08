@@ -14,13 +14,14 @@ Use this skill **every time** after `git push` in this repo (and any repo using 
 ## Preconditions (one-time)
 
 - `tools/ci-watch.py` exists at repo root (`atlas-cad-mobile/tools/ci-watch.py`).
-- Auth for GitHub Actions read — pick one:
+- **Git via SSH (already set up, script uses it by default):** `origin = git@github.com:owner/repo.git`, key `~/.ssh/id_ed25519`. The script verifies SSH first (`ssh -T git@github.com` + `git ls-remote origin HEAD`) and warns if local HEAD is not pushed yet. Skip with `--no-ssh`.
+- **Actions API auth (still required):** GitHub's Actions REST API is HTTPS-only, so SSH alone cannot read run status/logs. Set a token for the polling step only — pick one:
   - Env token (recommended on this phone, no `gh` CLI needed):
     ```sh
     export GH_TOKEN=ghp_...   # fine-grained PAT: Actions: Read, Contents: Read
     ```
   - Or `gh auth login` (script auto-detects `gh auth token`).
-- Repo `origin` points to `github.com:<owner>/<repo>.git` so the script can auto-detect it. Otherwise pass `--repo owner/name`.
+- Repo `origin` points to `git@github.com:<owner>/<repo>.git` so the script can auto-detect it. Otherwise pass `--repo owner/name`.
 
 ## Workflows in this repo
 
@@ -84,4 +85,4 @@ python3 tools/ci-watch.py --workflow pages.yml
 python3 tools/ci-watch.py --json --log-lines 200
 ```
 
-Loop in one line: **push → ci-watch → (fail → fix → push → ci-watch)* → SUCCESS (exit 0).**
+Loop in one line: **push (git via SSH) → ci-watch (SSH preflight + Actions API via token) → (fail → fix → push → ci-watch)* → SUCCESS (exit 0).**
