@@ -7,8 +7,8 @@ android {
         applicationId "com.fiberlens.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "1.1.7"
+        versionCode 9
+        versionName "1.1.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,13 +16,18 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            storeFile file('atlas-cad-release.keystore')
+            storePassword 'atlas-cad-release-2026'
+            keyAlias 'atlas-cad'
+            keyPassword 'atlas-cad-release-2026'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
-            // The public preview build has no private release keystore configured;
-            // use Gradle's installable debug key while keeping the release variant
-            // (no debug application ID or debug resources).
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

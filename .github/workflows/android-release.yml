@@ -40,7 +40,7 @@ jobs:
       - name: Sync Android
         working-directory: atlas-mobile
         run: npx cap sync android
-      - name: Build release APK
+      - name: Build signed release APK
         working-directory: atlas-mobile/android
         run: |
           chmod +x gradlew
