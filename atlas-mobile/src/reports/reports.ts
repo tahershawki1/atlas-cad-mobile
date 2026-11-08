@@ -48,7 +48,7 @@ export const REPORTS: ReportDef[] = [
         { Item: 'Drawing', Count: drawing.meta.name },
         { Item: 'Entities', Count: drawing.entities.length },
         { Item: 'Layers', Count: drawing.layers.length },
-        { Item: 'Blocks', Count: drawing.blocks?.length ?? doc.drawing.blocks?.length ?? 0 },
+        { Item: 'Blocks', Count: Object.keys(drawing.blocks ?? {}).length },
       ] },
       ...entityStats(drawing.entities),
     ];
