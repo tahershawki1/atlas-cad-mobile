@@ -9,6 +9,8 @@
 desktop browser, edits them like a CAD program, puts your live GPS position *inside* the drawing,
 and exports — fully offline. See `docs/09-UPDATE.md` for the GitHub Releases self-update flow.
 
+**Online preview:** https://tahershawki1.github.io/atlas-cad-mobile/
+
 > 🇪🇬 **بالعربي:** ATLAS CAD هو برنامج CAD ذكي. يفتح ملفات DWG/DXF ويعرضها بدقة على الموبايل
 > والتابلت، ويسمح بالتعديل والرسم والكتابة، ويعرض موقعك الحالي **📍 YOU ARE HERE** داخل
 > ملف الـCAD نفسه بدون أي خريطة منفصلة — وكل ذلك يعمل بدون إنترنت.
