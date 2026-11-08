@@ -49,13 +49,10 @@ export function StartScreen() {
       let pid = pendingProject.current;
       pendingProject.current = null;
       if (!pid) {
-        const r = await ask('New project', [
-          { key: 'name', label: 'Project name', value: f.name.replace(/\.(dwg|dxf)$/i, '') },
-          { key: 'code', label: 'Project code (optional)' },
-          { key: 'client', label: 'Client / operator (optional)' },
-        ], { okLabel: 'Create' });
-        if (!r) return;
-        pid = (await createProject({ name: r.name, code: r.code, client: r.client })).id;
+        // Open directly in CAD: the drawing filename becomes the local project name.
+        // No project form is shown before the map.
+        const name = f.name.replace(/\.(dwg|dxf)$/i, '') || 'Drawing';
+        pid = (await createProject({ name })).id;
       }
       await importDrawingFile(pid, f.name, bytes);
       await openProject(pid);
