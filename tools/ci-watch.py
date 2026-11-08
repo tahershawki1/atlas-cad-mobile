@@ -171,7 +171,10 @@ def list_runs(repo: str, token: str, sha: str, branch: str, workflow: str) -> li
     q = []
     if sha:
         q.append(f"head_sha={sha}")
-    if branch:
+    elif branch:
+        # Only filter by branch when no SHA given. Filtering by branch
+        # would hide tag-triggered runs (e.g. android-release on v*) whose
+        # branch is the tag name, not "main".
         q.append(f"branch={branch}")
     q.append("per_page=100")
     path = f"/repos/{repo}/actions/runs?{'&'.join(q)}"
@@ -221,7 +224,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Watch GitHub Actions runs until completed.")
     ap.add_argument("--repo", default="", help="owner/name (auto-detected from git remote)")
     ap.add_argument("--sha", default="", help="commit SHA to watch (default: git HEAD)")
-    ap.add_argument("--branch", default="", help="branch (default: current branch)")
+    ap.add_argument("--branch", default="", help="branch filter (default: none, watch all runs for the SHA; branch filter only applies when no SHA is given)")
     ap.add_argument("--workflow", default="", help="filter e.g. pages.yml or 'ATLAS CAD'")
     ap.add_argument("--timeout-minutes", type=int, default=45)
     ap.add_argument("--poll", type=int, default=15, help="seconds between polls")
