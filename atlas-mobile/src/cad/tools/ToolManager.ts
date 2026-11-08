@@ -278,6 +278,13 @@ export class ToolManager {
     const movedDist = Math.hypot(e.clientX - dn.x, e.clientY - dn.y);
     const tapThresh = e.pointerType === 'touch' ? 16 : 4;
     if (!dn.moved) {
+      // CAD commands on touch require deliberate placement. A quick finger
+      // tap must not commit a point or accidentally finish the command;
+      // the long-press precision mode above is the only touch click path.
+      if (e.pointerType === 'touch' && this.active?.id !== 'select' && !this.active?.wantsDrag) {
+        this.view.invalidateOverlay();
+        return;
+      }
       // A quick swipe (especially within the touch settling window) must not
       // register as a tap — otherwise panning adds unintended measure points.
       if (movedDist > tapThresh) { this.view.invalidateOverlay(); return; }
