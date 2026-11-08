@@ -1,6 +1,6 @@
 {
   "name": "atlas-cad-mobile",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ATLAS CAD Mobile - CAD and Surveying",
   "scripts": {
     "dev": "vite",
