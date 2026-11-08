@@ -25,6 +25,8 @@ export interface AppState {
   lineweights: boolean;
   grid: boolean;
   ortho: boolean;
+  /** DWG View mode: single-finger pan always allowed (IsCanSingleMove) */
+  viewOnly: boolean;
   snap: SnapSettings;
   style: NewEntityStyle;
   toasts: Toast[];
@@ -62,6 +64,7 @@ export const useApp = create<AppState>((set, get) => ({
   lineweights: false,
   grid: false,
   ortho: false,
+  viewOnly: false,
   snap: defaultSnapSettings(),
   style: {
     layer: '0', aci: 256, lineType: undefined, lineWeight: undefined, transparency: undefined,

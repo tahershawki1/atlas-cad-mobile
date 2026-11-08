@@ -16,7 +16,7 @@ export interface SnapSettings {
 
 export const defaultSnapSettings = (): SnapSettings => ({
   enabled: true,
-  kinds: { end: true, mid: true, center: true, quadrant: true, node: true, insert: true, intersection: true, perpendicular: true, nearest: false, gps: true, grid: false },
+  kinds: { end: true, mid: true, center: true, quadrant: true, node: true, insert: true, intersection: true, perpendicular: true, nearest: true, gps: true, grid: false },
   gridSpacing: 1,
 });
 

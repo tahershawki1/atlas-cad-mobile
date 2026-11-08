@@ -16,6 +16,8 @@ export function CanvasControls() {
         <button className={`chip ${s.ortho ? 'on' : ''}`} onClick={() => s.set({ ortho: !s.ortho })} title="Ortho (F8)">ORTHO</button>
         <button className={`chip ${s.grid ? 'on' : ''}`} onClick={() => app.setOption('grid', !s.grid)} title="Grid (F7)">GRID</button>
         <button className={`chip ${s.lineweights ? 'on' : ''}`} onClick={() => app.setOption('lineweights', !s.lineweights)} title="Show lineweights">LWT</button>
+        {/* DWG View Mode toggle: single-finger pans only in View mode; Edit mode reserves single finger for tools (IsCanSingleMove) */}
+        <button className={`chip ${s.viewOnly ? 'on' : ''}`} onClick={() => { const v = !s.viewOnly; s.set({ viewOnly: v }); app.tools?.setViewOnly(v); }} title="View mode (DWG): 1 finger pans • Off = Edit mode: 1 finger edits, 2 fingers pan/zoom">{s.viewOnly ? 'VIEW ✓' : 'VIEW'}</button>
         {gps.calibrated && <button className={`chip ${gps.headingUp ? 'on' : ''}`} onClick={() => gpsController.setHeadingUp(!gps.headingUp)} title="North-up / Heading-up">{gps.headingUp ? 'HEADING ▲' : 'NORTH ▲'}</button>}
       </div>
       <div className="fab-col">

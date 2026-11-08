@@ -69,6 +69,7 @@ export class AppController {
       gps: () => this.gpsCadPosition(),
     } as any);
     registerTools(tm);
+    tm.setViewOnly(!!(this.store as any).viewOnly);
     tm.onToolChange = (t) => useApp.setState((s) => ({ toolId: t?.id ?? 'select', toolRev: s.toolRev + 1 }));
     let lastCursor = 0;
     tm.onCursor = (p) => {
