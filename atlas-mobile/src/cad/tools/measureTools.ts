@@ -231,8 +231,15 @@ export class PointCoordsTool extends Tool {
   readonly id = 'mcoords'; readonly label = 'P Coordinates';
   wantsSnap = true;
   private last: Vec2 | null = null;
+  private placed: Vec2[] = [];
   protected onActivate() { this.setPrompt('Pick points to read coordinates (X, Y). Enter = finish.'); }
-  reset() { this.last = null; }
+  reset() { this.last = null; this.placed = []; }
+  private labelText(p: Vec2) {
+    const u = upm();
+    return u !== 1
+      ? `X ${p.x.toFixed(3)}  Y ${p.y.toFixed(3)} du\n${(p.x / u).toFixed(3)} , ${(p.y / u).toFixed(3)} m`
+      : `X ${p.x.toFixed(4)}\nY ${p.y.toFixed(4)}`;
+  }
   click(e: ToolEvent) {
     const p = e.p;
     const u = upm();
@@ -243,19 +250,39 @@ export class PointCoordsTool extends Tool {
       : `X ${p.x.toFixed(4)}  Y ${p.y.toFixed(4)}`;
     useMeasure.getState().add({ kind: 'Coords', text, value: 0, at: Date.now(), pts: [{ x: p.x, y: p.y }] });
     this.last = { x: p.x, y: p.y };
+    this.placed.push({ x: p.x, y: p.y });
     this.host.notify(`P: ${text}`, 'success');
     this.setPrompt(`Last: X ${p.x.toFixed(3)}  Y ${p.y.toFixed(3)} · pick another`);
   }
   enter() { this.host.finish(); }
   escape() { this.host.finish(); }
+  private drawPointLabel(ctx: CanvasRenderingContext2D, cam: Camera, p: Vec2, i: number, preview = false) {
+    const s = cam.worldToScreen(p.x, p.y);
+    const ox = 24 + (i % 2) * 12;
+    const oy = i % 2 ? 22 : -52;
+    const lx = s.x + ox, ly = s.y + oy;
+    // drawLabel adds its own 12px padding around the label; connect to the
+    // near edge of that box and finish the leader with an arrow at the point.
+    const endX = lx + 12, endY = ly + (oy < 0 ? 42 : 12);
+    ctx.save();
+    ctx.strokeStyle = preview ? '#33d6ff' : '#ffcf33';
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(endX, endY); ctx.lineTo(s.x, s.y); ctx.stroke();
+    const a = Math.atan2(s.y - endY, s.x - endX), ah = 7;
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x - ah * Math.cos(a - 0.45), s.y - ah * Math.sin(a - 0.45));
+    ctx.lineTo(s.x - ah * Math.cos(a + 0.45), s.y - ah * Math.sin(a + 0.45));
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+    drawLabel(ctx, lx, ly, this.labelText(p), preview ? 'rgba(0,50,80,0.92)' : 'rgba(60,45,0,0.92)');
+  }
   overlay(ctx: CanvasRenderingContext2D, cam: Camera) {
+    this.placed.forEach((p, i) => this.drawPointLabel(ctx, cam, p, i));
     if (this.cursor) {
+      this.drawPointLabel(ctx, cam, this.cursor, this.placed.length, true);
       const s = cam.worldToScreen(this.cursor.x, this.cursor.y);
-      const u = upm();
-      const txt = u !== 1
-        ? `X ${this.cursor.x.toFixed(3)}  Y ${this.cursor.y.toFixed(3)}\n${(this.cursor.x/u).toFixed(3)} , ${(this.cursor.y/u).toFixed(3)} m`
-        : `X ${this.cursor.x.toFixed(4)}\nY ${this.cursor.y.toFixed(4)}`;
-      drawLabel(ctx, s.x, s.y, txt, 'rgba(0,50,80,0.92)');
       ctx.save(); ctx.strokeStyle = '#33d6ff'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(s.x, s.y, 5, 0, Math.PI * 2); ctx.stroke();
       ctx.restore();
