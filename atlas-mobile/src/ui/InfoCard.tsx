@@ -3,7 +3,7 @@ import { useApp } from '../app/store';
 import { app } from '../app/controller';
 import { Icon } from './icons';
 import { fmt } from './common';
-import { entityLength, entityArea } from '../cad/edit/measure';
+import { entityLength } from '../cad/edit/measure';
 import { InfoExtensions } from './infoExtensions';
 
 /** Quick info for the tapped entity. */
@@ -16,24 +16,27 @@ export function InfoCard() {
   const e = doc?.get(id);
   if (!e) return null;
   const len = entityLength(e);
-  const area = entityArea(e);
   const upm = app.unitsPerMeter();
   const close = () => useApp.setState({ infoEntity: null });
+  const select = () => app.selection?.set([id]);
+  const startTool = (tool: 'move' | 'copy') => { select(); app.setTool(tool); };
+  const openProperties = () => { select(); useApp.setState({ panel: 'props' }); };
+  const deleteEntity = () => { select(); app.deleteSelection(); close(); };
   return (
     <div className="info-card">
       <h4>
         <span className="grow">{e.type === 'insert' ? `Block: ${e.block}` : e.type.toUpperCase()}</span>
-        <button className="icon-btn" style={{ minWidth: 32, height: 32 }} onClick={() => app.zoomToEntities([id])} title="Zoom to"><Icon name="zoomin" /></button>
-        <button className="icon-btn" style={{ minWidth: 32, height: 32 }} onClick={() => useApp.setState({ panel: 'props' })} title="Properties"><Icon name="props" /></button>
         <button className="icon-btn" style={{ minWidth: 32, height: 32 }} onClick={close}><Icon name="close" /></button>
       </h4>
+      <div className="row wrap" style={{ gap: 6, marginBottom: 8 }}>
+        <button className="btn sm" onClick={openProperties}><Icon name="props" />Properties</button>
+        <button className="btn sm" onClick={() => startTool('move')}><Icon name="move" />Move</button>
+        <button className="btn sm" onClick={() => startTool('copy')}><Icon name="copy" />Copy</button>
+        <button className="btn sm danger" onClick={deleteEntity}><Icon name="trash" />Delete</button>
+      </div>
       <div className="kv">
-        <div>Layer</div><div>{e.layer}</div>
-        {e.handle && <><div>Handle</div><div className="mono">{e.handle}</div></>}
         {len !== null && <><div>Length</div><div>{fmt(len, 3)} du{upm !== 1 ? ` · ${fmt(len / upm, 2)} m` : ''}</div></>}
-        {area !== null && <><div>Area</div><div>{fmt(area, 3)} du²{upm !== 1 ? ` · ${fmt(area / upm / upm, 2)} m²` : ''}</div></>}
-        {(e.type === 'text' || e.type === 'mtext') && <><div>Text</div><div dir="auto">{e.value}</div></>}
-        {e.type === 'insert' && e.attribs?.map((a) => <React.Fragment key={a.tag}><div>{a.tag}</div><div dir="auto">{a.value}</div></React.Fragment>)}
+        {e.type === 'point' && <><div>X</div><div className="mono">{fmt(e.p.x, 3)}</div><div>Y</div><div className="mono">{fmt(e.p.y, 3)}</div></>}
       </div>
       <InfoExtensions entityId={id} />
     </div>
