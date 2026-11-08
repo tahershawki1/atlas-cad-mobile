@@ -13,10 +13,13 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - name: Select JDK 21
-        run: |
-          sudo update-alternatives --set java /usr/lib/jvm/temurin-21-jdk-amd64/bin/java || true
-          java -version || true
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Show Java
+        run: java -version
       - uses: actions/setup-node@v4
         with:
           node-version: 22
