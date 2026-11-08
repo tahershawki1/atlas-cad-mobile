@@ -225,4 +225,48 @@ export function minDistance(ga: any, gb: any): { d: number; a: Vec2; b: Vec2 } |
   return best;
 }
 
+
+
+export class PointCoordsTool extends Tool {
+  readonly id = 'mcoords'; readonly label = 'P Coordinates';
+  wantsSnap = true;
+  private last: Vec2 | null = null;
+  protected onActivate() { this.setPrompt('Pick points to read coordinates (X, Y). Enter = finish.'); }
+  reset() { this.last = null; }
+  click(e: ToolEvent) {
+    const p = e.p;
+    const u = upm();
+    const xu = u !== 1 ? (p.x / u).toFixed(3) : null;
+    const yu = u !== 1 ? (p.y / u).toFixed(3) : null;
+    const text = u !== 1
+      ? `X ${p.x.toFixed(3)}  Y ${p.y.toFixed(3)} du  |  ${xu} m, ${yu} m`
+      : `X ${p.x.toFixed(4)}  Y ${p.y.toFixed(4)}`;
+    useMeasure.getState().add({ kind: 'Coords', text, value: 0, at: Date.now(), pts: [{ x: p.x, y: p.y }] });
+    this.last = { x: p.x, y: p.y };
+    this.host.notify(`P: ${text}`, 'success');
+    this.setPrompt(`Last: X ${p.x.toFixed(3)}  Y ${p.y.toFixed(3)} · pick another`);
+  }
+  enter() { this.host.finish(); }
+  escape() { this.host.finish(); }
+  overlay(ctx: CanvasRenderingContext2D, cam: Camera) {
+    if (this.cursor) {
+      const s = cam.worldToScreen(this.cursor.x, this.cursor.y);
+      const u = upm();
+      const txt = u !== 1
+        ? `X ${this.cursor.x.toFixed(3)}  Y ${this.cursor.y.toFixed(3)}\n${(this.cursor.x/u).toFixed(3)} , ${(this.cursor.y/u).toFixed(3)} m`
+        : `X ${this.cursor.x.toFixed(4)}\nY ${this.cursor.y.toFixed(4)}`;
+      drawLabel(ctx, s.x, s.y, txt, 'rgba(0,50,80,0.92)');
+      ctx.save(); ctx.strokeStyle = '#33d6ff'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(s.x, s.y, 5, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+    if (this.last) {
+      const s = cam.worldToScreen(this.last.x, this.last.y);
+      ctx.save(); ctx.strokeStyle = '#33d6ff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(s.x - 7, s.y); ctx.lineTo(s.x + 7, s.y); ctx.moveTo(s.x, s.y - 7); ctx.lineTo(s.x, s.y + 7); ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
 export type { Entity };

@@ -48,6 +48,7 @@ export const TOOL_INFO: ToolInfo[] = [
   { id: 'paste', label: 'Paste', icon: 'paste', group: 'edit', make: () => new E.PasteTool() },
   { id: 'delete', label: 'Delete', icon: 'trash', group: 'edit', make: () => new E.DeleteTool() },
 
+  { id: 'mcoords', label: 'P Coordinates', icon: 'point', group: 'measure', make: () => new M.PointCoordsTool() },
   { id: 'mdist', label: 'Distance', icon: 'distance', group: 'measure', make: () => new M.DistanceTool() },
   { id: 'marea', label: 'Area', icon: 'area', group: 'measure', make: () => new M.AreaTool() },
   { id: 'mangle', label: 'Angle', icon: 'angle', group: 'measure', make: () => new M.AngleTool() },

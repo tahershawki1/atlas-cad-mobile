@@ -25,6 +25,7 @@ const AR: Record<string, string> = {
   'Start tracking': 'بدء تسجيل المسار', 'Calibration wizard': 'معالج المعايرة', 'Auto-detect CRS': 'اكتشاف نظام الإحداثيات تلقائيًا',
   Navigate: 'ملاحة', 'Navigate to': 'الملاحة إلى', 'Arrived ✓': 'وصلت ✓',
   Distance: 'مسافة', Area: 'مساحة', Angle: 'زاوية', 'Object ↔ Object': 'بين عنصرين',
+  'P Coordinates': 'إحداثيات نقطة', Coords: 'إحداثيات', 'Object length': 'طول عنصر',
   Language: 'اللغة', 'Show lineweights': 'إظهار سمك الخطوط', 'Dark canvas (ACI 7 = white)': 'خلفية داكنة',
   'All projects': 'كل المشاريع', 'Save version': 'حفظ إصدار', Undo: 'تراجع', Redo: 'إعادة',
   Line: 'خط', Polyline: 'خط متعدد', Arc: 'قوس', Circle: 'دائرة', Rectangle: 'مستطيل', Triangle: 'مثلث', Polygon: 'مضلع', Ellipse: 'قطع ناقص',

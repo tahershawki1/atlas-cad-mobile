@@ -16,7 +16,7 @@ import { useT } from '../app/i18n';
 import { useIsPhone } from './useDevice';
 
 /** phone: the 5 CAD essentials + More (everything else lives in the More grid) */
-const PHONE_DOCK: PanelId[] = ['layers', 'draw', 'edit', 'gps', 'more'];
+const PHONE_DOCK: PanelId[] = ['layers', 'draw', 'edit', 'measure', 'more'];
 
 export const DOCK: { id: PanelId; label: string; icon: string }[] = [
   { id: 'layers', label: 'Layers', icon: 'layers' },

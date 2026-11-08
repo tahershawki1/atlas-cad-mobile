@@ -114,15 +114,16 @@ export function TextPanel() {
 export function MeasurePanel() {
   const results = useMeasure((s) => s.results);
   const clear = useMeasure((s) => s.clear);
+  const tr = useT();
   return (
     <div>
       <ToolGrid group="measure" />
-      <div className="row" style={{ marginTop: 12 }}><div className="section grow" style={{ margin: 0 }}>Results</div>{results.length > 0 && <button className="btn sm" onClick={clear}>Clear</button>}</div>
-      {results.length === 0 ? <div className="empty small">No measurements yet. Distances use drawing coordinates converted to metres via the GPS calibration (or drawing units).</div> : (
+      <div className="row" style={{ marginTop: 12 }}><div className="section grow" style={{ margin: 0 }}>{tr('Results') || 'Results'}</div>{results.length > 0 && <button className="btn sm" onClick={clear}>{tr('Clear') || 'Clear'}</button>}</div>
+      {results.length === 0 ? <div className="empty small">{tr('No measurements yet. Distances use drawing coordinates converted to metres via the GPS calibration (or drawing units).') || 'No measurements yet. Distances use drawing coordinates converted to metres via the GPS calibration (or drawing units).'}</div> : (
         <div className="list">
           {results.map((r, i) => (
             <div className="list-item" key={i} style={{ cursor: 'default' }}>
-              <span className="badge">{r.kind}</span>
+              <span className="badge">{tr(r.kind)}</span>
               <span className="grow mono small">{r.text}</span>
             </div>
           ))}

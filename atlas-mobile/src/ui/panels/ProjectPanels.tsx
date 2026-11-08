@@ -216,6 +216,7 @@ const MORE: { id: PanelId; label: string; icon: string }[] = [
   { id: 'project', label: 'Project', icon: 'folder' },
   { id: 'versions', label: 'Versions', icon: 'version' },
   { id: 'export', label: 'Export', icon: 'export' },
+  { id: 'gps', label: 'GPS', icon: 'gps' },
   { id: 'calib', label: 'Calibration', icon: 'calibrate' },
   { id: 'update', label: 'Software Update', icon: 'sync' },
   { id: 'sync', label: 'Cloud sync', icon: 'sync' },

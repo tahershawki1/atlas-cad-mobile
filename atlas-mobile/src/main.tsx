@@ -6,6 +6,7 @@ import { startAutoSync } from './data/sync';
 import { useApp } from './app/store';
 import { installAtlasNativeHandlers } from './ui/nativeHandlers';
 import { Capacitor } from '@capacitor/core';
+import { installWebAutoUpdate } from './platform/webAutoUpdate';
 
 startAutoSync((r) => useApp.getState().toast(`Synced: ↑${r.pushed} ↓${r.pulled}${r.conflicts ? ` · ${r.conflicts} conflicts` : ''}`, 'info'));
 installAtlasNativeHandlers();
@@ -14,7 +15,7 @@ createRoot(document.getElementById('root')!).render(<App />);
 
 // Web build (iPhone "Add to Home Screen", any browser): work offline and keep the projects.
 // The native apps already ship their files and storage.
-if (import.meta.env.PROD && !Capacitor.isNativePlatform() && 'serviceWorker' in navigator && window.isSecureContext) {
-  navigator.serviceWorker.register('./sw.js').catch(() => { /* offline mode unavailable */ });
+if (import.meta.env.PROD && !Capacitor.isNativePlatform()) {
+  installWebAutoUpdate();
   navigator.storage?.persist?.().catch(() => {});
 }

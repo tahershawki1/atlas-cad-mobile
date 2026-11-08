@@ -20,8 +20,8 @@ self.addEventListener('message', (e) => {
   if (e.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// Cache first: in the field the network is slow or absent. A new build ships a new sw.js
-// (different file list → different VERSION) which precaches the new files and replaces this one.
+// Hashed assets are cache-first, but the document itself must always be checked online.
+// Otherwise an old index.html can keep loading old JavaScript forever after a deploy.
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
@@ -29,7 +29,11 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== self.location.origin || url.pathname.includes('/api/')) return;
   if (url.pathname.endsWith('version.json')) return; // never cache the build number
   if (req.mode === 'navigate') {
-    e.respondWith(caches.match('./', { cacheName: CACHE, ignoreVary: true }).then((hit) => hit || fetch(req)));
+    e.respondWith(
+      fetch(req, { cache: 'no-store' })
+        .then((res) => res.ok ? res : Promise.reject(new Error('navigation failed')))
+        .catch(() => caches.match('./', { cacheName: CACHE, ignoreVary: true }).then((hit) => hit || caches.match(req, { cacheName: CACHE, ignoreVary: true }))),
+    );
     return;
   }
   e.respondWith(
