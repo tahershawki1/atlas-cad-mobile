@@ -220,8 +220,12 @@ export class ToolManager {
     const dn = this.down;
     if (dn && prev) {
       const dist = Math.hypot(e.clientX - dn.x, e.clientY - dn.y);
-      const thresh = e.pointerType === 'touch' ? 10 : 4;
-      if (!dn.moved && dist > thresh) {
+      // A finger is less stable than a mouse. Give taps a larger dead-zone
+      // and a short settling period so tapping empty space to clear selection
+      // cannot become an accidental pan.
+      const thresh = e.pointerType === 'touch' ? 16 : 4;
+      const touchSettled = e.pointerType !== 'touch' || performance.now() - dn.t >= 160;
+      if (!dn.moved && dist > thresh && touchSettled) {
         dn.moved = true;
         clearTimeout(this.longPressTimer);
         if (dn.mode === 'none') {
