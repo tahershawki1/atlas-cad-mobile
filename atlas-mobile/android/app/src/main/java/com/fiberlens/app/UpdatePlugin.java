@@ -3,7 +3,6 @@ package com.fiberlens.app;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -37,7 +36,10 @@ public class UpdatePlugin extends Plugin {
             PackageInfo pi = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0);
             JSObject o = new JSObject();
             o.put("versionName", pi.versionName);
-            o.put("versionCode", Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? pi.getVersionCode() : pi.versionCode);
+            // PackageInfo.versionCode is available across the Android API levels
+            // supported by this Capacitor app. The newer getLongVersionCode()
+            // API is unnecessary here because the value is only diagnostic.
+            o.put("versionCode", pi.versionCode);
             call.resolve(o);
         } catch (Exception e) {
             call.reject("Cannot read version: " + e.getMessage());
