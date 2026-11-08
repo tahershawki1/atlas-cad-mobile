@@ -1,0 +1,59 @@
+name: Bootstrap ATLAS mobile from preserved FiberLens
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/bootstrap-atlas-mobile.yml'
+permissions:
+  contents: write
+concurrency:
+  group: atlas-bootstrap
+  cancel-in-progress: false
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Copy original without modifying archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f original/FiberLens/package.json
+          test -f original/FiberLens/capacitor.config.ts
+          test ! -e atlas-mobile || { echo "atlas-mobile already exists; refusing overwrite"; exit 1; }
+          mkdir -p atlas-mobile
+          cp -a original/FiberLens/. atlas-mobile/
+          rm -rf atlas-mobile/.git atlas-mobile/node_modules atlas-mobile/dist
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p='atlas-mobile/package.json';
+          const j=JSON.parse(fs.readFileSync(p,'utf8'));
+          j.name='atlas-cad-mobile';
+          j.description='ATLAS CAD Mobile - CAD and Surveying';
+          fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');
+          const c='atlas-mobile/capacitor.config.ts';
+          let s=fs.readFileSync(c,'utf8').replace("com.fiberlens.app","com.atlas.cadmobile").replace("appName: 'FiberLens'","appName: 'ATLAS CAD Mobile'");
+          fs.writeFileSync(c,s);
+          JS
+          mkdir -p docs
+          cat > docs/FTTH-REMOVAL.md <<'EOF'
+          # FTTH removal gate
+          - Original upstream is immutable at original/FiberLens.
+          - atlas-mobile is a separate working copy.
+          - FTTH features must be isolated by tracing their routes, stores, imports, tests, and data schemas before removal.
+          - Keep shared CAD/DWG, map, coordinate, geometry, file, and Android infrastructure.
+          - No claim of FTTH removal or working APK until typecheck, build, tests and Android assembly pass.
+          - Review upstream license notices and third-party dependencies before distribution.
+          EOF
+          git add atlas-mobile docs/FTTH-REMOVAL.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Bootstrap ATLAS mobile working copy from preserved FiberLens"
+          git push origin HEAD:main
+      - name: Check project layout
+        run: |
+          test -f atlas-mobile/package.json
+          test -f atlas-mobile/capacitor.config.ts
+          test -f original/FiberLens/package.json
