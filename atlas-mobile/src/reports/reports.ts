@@ -9,7 +9,7 @@ export interface ReportDef { id: string; title: string; description: string; bui
 
 const d = (t?: number) => (t ? new Date(t).toLocaleString() : '');
 
-function entityStats(entities: Entity[]): Row[] {
+function entityStats(entities: Entity[]): { title: string; rows: Row[] }[] {
   const byType = new Map<string, number>();
   const byLayer = new Map<string, number>();
   for (const e of entities) {
