@@ -56,7 +56,12 @@ export class ToolManager {
     view.addOverlay('tool', (ctx, cam) => {
       this.active?.overlay(ctx, cam);
       const s = this.lastSnap;
-      if (s) { const p = cam.worldToScreen(s.p.x, s.p.y); drawSnapMarker(ctx, p.x, p.y, s.kind); }
+      // Do not show a snap arrow while a finger is simply navigating the map.
+      // Snap feedback is intentional only in mouse mode or after long-press
+      // precision mode has displayed the loupe.
+      if (s && (this.lastPointerType !== 'touch' || this.preciseEv)) {
+        const p = cam.worldToScreen(s.p.x, s.p.y); drawSnapMarker(ctx, p.x, p.y, s.kind);
+      }
       if (this.preciseEv) this.drawLoupe(ctx, cam);
       // crosshair for mouse
       if (this.lastEvent && this.mouseInside && this.lastPointerType === 'mouse' && this.active && this.active.id !== 'select') {
@@ -233,6 +238,7 @@ export class ToolManager {
         if (dn.mode === 'none') {
           const toolDrag = this.active && (this.active.wantsDrag || (e.pointerType !== 'touch' && dn.button === 0) || this.longPressArmed);
           dn.mode = toolDrag ? 'drag' : 'pan';
+          if (dn.mode === 'pan') this.lastSnap = null;
         }
       }
       if (dn.moved) {
