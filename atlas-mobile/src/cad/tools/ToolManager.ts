@@ -223,11 +223,11 @@ export class ToolManager {
       // A finger is less stable than a mouse. Give taps a larger dead-zone
       // and a short settling period so tapping empty space to clear selection
       // cannot become an accidental pan.
-      const thresh = e.pointerType === 'touch' ? 12 : 4;
-      // Keep panning responsive; only a very short settling window protects
-      // ordinary taps from becoming a pan.
-      const touchSettled = e.pointerType !== 'touch' || performance.now() - dn.t >= 50;
-      if (!dn.moved && dist > thresh && touchSettled) {
+      // Require a clear touch displacement before panning. This keeps a tap
+      // on empty canvas a true deselect action, while deliberate drags remain
+      // responsive and start without jumping the camera.
+      const thresh = e.pointerType === 'touch' ? 20 : 4;
+      if (!dn.moved && dist > thresh) {
         dn.moved = true;
         clearTimeout(this.longPressTimer);
         if (dn.mode === 'none') {
@@ -275,7 +275,14 @@ export class ToolManager {
     if (dn.mode === 'drag' && dn.moved) { this.active?.dragEnd(ev, dn.ev); this.longPressArmed = false; this.view.invalidateOverlay(); return; }
     this.longPressArmed = false;
     this.active?.up(ev);
-    if (!dn.moved) this.active?.click(ev);
+    const movedDist = Math.hypot(e.clientX - dn.x, e.clientY - dn.y);
+    const tapThresh = e.pointerType === 'touch' ? 16 : 4;
+    if (!dn.moved) {
+      // A quick swipe (especially within the touch settling window) must not
+      // register as a tap — otherwise panning adds unintended measure points.
+      if (movedDist > tapThresh) { this.view.invalidateOverlay(); return; }
+      this.active?.click(ev);
+    }
     this.view.invalidateOverlay();
   };
 
