@@ -1,41 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../app/store';
 import { Icon, Logo } from './icons';
-import { useSession, initSession, login, setupAdmin, logout, ROLE_LABEL, can } from '../auth/session';
+import { initSession, can } from '../auth/session';
 import { isIOS } from '../platform/ios';
 import { listProjects, createProject, importDrawingFile, openProject, newBlankDrawing, deleteProject } from '../data/projects';
 import type { ProjectRow } from '../data/db';
 import { ask, confirmDialog } from '../app/dialogs';
-import { DEV_SEED } from '../dev/seed';
 import { useT } from '../app/i18n';
 
-function AuthForm({ setup }: { setup: boolean }) {
-  const [u, setU] = useState(setup ? 'admin' : '');
-  const [n, setN] = useState('');
-  const [p, setP] = useState('');
-  const [err, setErr] = useState('');
-  const submit = async () => {
-    setErr('');
-    try {
-      const ok = setup ? await setupAdmin(u, n || u, p) : await login(u, p);
-      if (!ok) setErr('Invalid username or password');
-    } catch (e) { setErr((e as Error).message); }
-  };
-  return (
-    <div className="card" style={{ maxWidth: 420, margin: '30px auto', padding: 20 }}>
-      <h3 style={{ marginTop: 0 }}>{setup ? 'Create the administrator account' : 'Sign in'}</h3>
-      {setup && <p className="muted small">First launch on this device. Accounts are stored locally (PBKDF2-hashed) and work offline.</p>}
-      <div className="field"><label>Username</label><input value={u} onChange={(e) => setU(e.target.value)} autoCapitalize="none" /></div>
-      {setup && <div className="field"><label>Display name</label><input value={n} onChange={(e) => setN(e.target.value)} /></div>}
-      <div className="field"><label>Password</label><input type="password" value={p} onChange={(e) => setP(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submit()} /></div>
-      {err && <div className="badge err" style={{ marginBottom: 8 }}>{err}</div>}
-      <button className="btn primary" style={{ width: '100%' }} onClick={submit}>{setup ? 'Create & continue' : 'Sign in'}</button>
-    </div>
-  );
-}
-
 export function StartScreen() {
-  const session = useSession();
   const t = useT();
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [over, setOver] = useState(false);
@@ -43,18 +16,14 @@ export function StartScreen() {
   const pendingProject = useRef<string | null>(null);
   const toast = useApp((s) => s.toast);
 
-  useEffect(() => { initSession(); }, []);
+  useEffect(() => { void initSession(); refresh(); }, []);
   const refresh = () => listProjects().then(setProjects);
-  useEffect(() => { if (session.user) refresh(); }, [session.user]);
 
   // developer convenience: ?sample=<url>&devseed=1 (test data from src/dev/seed.ts)
   useEffect(() => {
-    if (!session.ready) return;
     const q = new URLSearchParams(import.meta.env.DEV ? location.search : '');
-    if (q.get('devseed') && session.needsSetup) { setupAdmin(DEV_SEED.username, DEV_SEED.displayName, DEV_SEED.password); return; }
-    if (q.get('devseed') && !session.user) { login(DEV_SEED.username, DEV_SEED.password); return; }
     const sample = q.get('sample');
-    if (sample && session.user && !(window as any).__sampleLoaded) {
+    if (sample && !(window as any).__sampleLoaded) {
       (window as any).__sampleLoaded = true;
       (async () => {
         const name = decodeURIComponent(sample.split('/').pop()!);
@@ -69,7 +38,7 @@ export function StartScreen() {
         await openProject(p.id);
       })().catch((e) => { useApp.setState({ loading: null }); toast(e.message, 'error'); });
     }
-  }, [session.ready, session.user, session.needsSetup]);
+  }, []);
 
   const handleFiles = async (files: FileList | null) => {
     const f = files?.[0];
@@ -104,8 +73,6 @@ export function StartScreen() {
     await openProject(p.id);
   };
 
-  if (!session.ready) return <div className="start"><div className="empty">Loading…</div></div>;
-
   return (
     <div className="start" onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
       onDrop={(e) => { e.preventDefault(); setOver(false); handleFiles(e.dataTransfer.files); }}>
@@ -116,15 +83,8 @@ export function StartScreen() {
             <h1>ATLAS CAD</h1>
             <p>{t('ATLAS CAD — your DWG is the map.')}</p>
           </div>
-          {session.user && (
-            <div className="col" style={{ alignItems: 'flex-end', gap: 4 }}>
-              <span className="badge info">{session.user.displayName} · {ROLE_LABEL[session.user.role]}</span>
-              <button className="btn sm" onClick={logout}><Icon name="logout" />{t('Sign out')}</button>
-            </div>
-          )}
         </div>
-        {session.needsSetup ? <AuthForm setup /> : !session.user ? <AuthForm setup={false} /> : (
-          <>
+        <>
             <div className="start-actions">
               <button className="btn primary" onClick={() => fileRef.current?.click()} disabled={!can('project.manage') && !can('cad.edit')}><Icon name="import" />{t('Open DWG / DXF')}</button>
               <button className="btn" onClick={newEmpty} disabled={!can('project.manage')} title={t('New blank project')}><Icon name="plus" />{t('New blank project')}</button>
@@ -152,8 +112,7 @@ export function StartScreen() {
                 ))}
               </div>
             )}
-          </>
-        )}
+        </>
       </div>
     </div>
   );

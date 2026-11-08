@@ -8,7 +8,7 @@ import { exportViewPdf, renderHighRes } from '../../reports/pdfView';
 import { drawingToGeoJSON, geojsonToKml, kmlToKmz } from '../../reports/geoExport';
 import { useGps } from '../../gps/gpsStore';
 import { isUsable } from '../../geo/calibration';
-import { audit, can, useSession } from '../../auth/session';
+import { audit, can } from '../../auth/session';
 import { entityLength, entityArea } from '../../cad/edit/measure';
 import { toCsv, downloadXlsx } from '../../reports/tables';
 
@@ -44,7 +44,7 @@ export function ExportPanel() {
     busy('Rendering PDF…');
     await new Promise((r) => setTimeout(r, 30));
     try {
-      const bytes = exportViewPdf(app.view, { title: `${st.projectName} — ${st.drawingName}`, subtitle: st.mode === 'asbuilt' ? 'AS-BUILT' : 'DESIGN', paper, landscape: true, mode, author: useSession.getState().user?.displayName, unitsPerMeter: app.unitsPerMeter(), northAngle: isUsable(cal) ? cal.northAngle : undefined });
+       const bytes = exportViewPdf(app.view, { title: `${st.projectName} — ${st.drawingName}`, subtitle: st.mode === 'asbuilt' ? 'AS-BUILT' : 'DESIGN', paper, landscape: true, mode, author: 'ATLAS CAD', unitsPerMeter: app.unitsPerMeter(), northAngle: isUsable(cal) ? cal.northAngle : undefined });
       await downloadBytes(`${name}_${stamp()}.pdf`, bytes, 'application/pdf');
       audit('export.pdf', name);
     } catch (e) { fail(e); return; }

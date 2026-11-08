@@ -5,7 +5,7 @@ import { useApp } from '../app/store';
 import type { Drawing, Entity } from '../cad/model/types';
 import type { Transaction } from '../cad/doc/CadDoc';
 import { emptyDrawing } from '../cad/model/types';
-import { audit, useSession, require as requirePerm } from '../auth/session';
+import { audit, require as requirePerm } from '../auth/session';
 import { gpsController } from '../gps/controller';
 import { solveCalibration, type Calibration } from '../geo/calibration';
 import { recordChange } from './sync';
@@ -29,10 +29,8 @@ export async function listProjects(): Promise<ProjectRow[]> {
 }
 
 export async function createProject(p: { name: string; code?: string; client?: string; location?: string }): Promise<ProjectRow> {
-  const row: ProjectRow = { id: uid(), name: p.name.trim() || 'Untitled project', code: p.code, client: p.client, location: p.location, createdAt: Date.now(), updatedAt: Date.now(), ownerId: useSession.getState().user?.id };
+  const row: ProjectRow = { id: uid(), name: p.name.trim() || 'Untitled project', code: p.code, client: p.client, location: p.location, createdAt: Date.now(), updatedAt: Date.now() };
   await db.projects.add(row);
-  const u = useSession.getState().user;
-  if (u) await db.projectMembers.put({ projectId: row.id, userId: u.id, role: u.role });
   await audit('project.create', row.name, undefined, row.id);
   return row;
 }
@@ -46,12 +44,12 @@ export async function importDrawingFile(projectId: string, name: string, bytes: 
   useApp.setState({ loading: 'Creating project copy…' });
   try {
     const fileId = uid();
-    await db.files.add({ id: fileId, projectId, kind: 'original', name, mime: /\.dxf$/i.test(name) ? 'image/vnd.dxf' : 'image/vnd.dwg', size: bytes.length, sha256: await sha256(bytes), data: bytes, createdAt: Date.now(), createdBy: useSession.getState().user?.id });
+    await db.files.add({ id: fileId, projectId, kind: 'original', name, mime: /\.dxf$/i.test(name) ? 'image/vnd.dxf' : 'image/vnd.dwg', size: bytes.length, sha256: await sha256(bytes), data: bytes, createdAt: Date.now() });
     const drawingId = uid();
     const snap = packDrawing(drawing);
     justImported = { drawingId, drawing };
     await db.drawings.add({ id: drawingId, projectId, name: drawing.meta.name, originalFileId: fileId, snapshot: snap, journalSeq: 0, snapshotAt: Date.now(), entityCount: drawing.entities.length, updatedAt: Date.now() });
-    await db.versions.add({ id: uid(), projectId, drawingId, number: 1, label: 'V1 (original import)', kind: 'import', snapshot: snap, createdAt: Date.now(), userId: useSession.getState().user?.id, userName: useSession.getState().user?.displayName, summary: `Imported ${name}: ${drawing.entities.length} entities, ${drawing.layers.length} layers`, entityCount: drawing.entities.length });
+    await db.versions.add({ id: uid(), projectId, drawingId, number: 1, label: 'V1 (original import)', kind: 'import', snapshot: snap, createdAt: Date.now(), summary: `Imported ${name}: ${drawing.entities.length} entities, ${drawing.layers.length} layers`, entityCount: drawing.entities.length });
     await db.projects.update(projectId, { activeDrawingId: drawingId, updatedAt: Date.now() });
     await audit('drawing.import', name, `${drawing.entities.length} entities`, projectId);
     // auto calibration from DWG GEODATA when present
@@ -97,7 +95,7 @@ export async function newBlankDrawing(projectId: string, name = 'Drawing'): Prom
   const drawingId = uid();
   const snap = packDrawing(d);
   await db.drawings.add({ id: drawingId, projectId, name, originalFileId: null, snapshot: snap, journalSeq: 0, snapshotAt: Date.now(), entityCount: 0, updatedAt: Date.now() });
-  await db.versions.add({ id: uid(), projectId, drawingId, number: 1, label: 'V1 (new drawing)', kind: 'design', snapshot: snap, createdAt: Date.now(), userId: useSession.getState().user?.id, userName: useSession.getState().user?.displayName, summary: 'Blank drawing', entityCount: 0 });
+  await db.versions.add({ id: uid(), projectId, drawingId, number: 1, label: 'V1 (new drawing)', kind: 'design', snapshot: snap, createdAt: Date.now(), summary: 'Blank drawing', entityCount: 0 });
   await db.projects.update(projectId, { activeDrawingId: drawingId, updatedAt: Date.now() });
   return drawingId;
 }
@@ -109,8 +107,6 @@ export async function openProject(projectId: string, drawingId?: string) {
   if (!p) throw new Error('Project not found');
   const did = drawingId ?? p.activeDrawingId;
   (window as any).__flProjectId = projectId;
-  const member = useSession.getState().user ? await db.projectMembers.get([projectId, useSession.getState().user!.id]) : undefined;
-  useSession.getState().set({ projectRole: member?.role ?? null });
   useApp.setState({ projectId, projectName: p.name, drawingId: did ?? null, mode: (p.settings?.mode as any) ?? 'design' });
   if (!did) { useApp.setState({ screen: 'cad' }); app.loadDrawing(emptyDrawing('Empty')); return; }
   const row = await db.drawings.get(did);
@@ -151,7 +147,7 @@ function appendJournal(tx: Transaction, kind: 'do' | 'undo' | 'redo') {
   const o = open;
   const seq = ++o.seq;
   journalQueue = journalQueue.then(async () => {
-    await db.journal.add({ drawingId: o.drawingId, seq, tx, kind, userId: useSession.getState().user?.id, at: Date.now() });
+    await db.journal.add({ drawingId: o.drawingId, seq, tx, kind, at: Date.now() });
     recordChange('drawings', o.drawingId, 'put', o.projectId, { seq, kind, label: tx.label });
     if (seq - o.snapshotSeq > 400) await compact();
   }).catch((err) => useApp.getState().toast('Journal write failed: ' + err.message, 'error'));
@@ -219,7 +215,7 @@ export async function saveVersion(label?: string, kind: VersionRow['kind'] = 'de
       id: uid(), projectId: o.projectId, drawingId: o.drawingId, number,
       label: label || (kind === 'asbuilt' ? `As-Built V${number}` : `V${number}`), kind,
       snapshot: c?.snap ?? packDrawing(cur), createdAt: Date.now(),
-      userId: useSession.getState().user?.id, userName: useSession.getState().user?.displayName,
+      
       summary: diff.text + (note ? ` — ${note}` : ''), parentId: last?.id, entityCount: cur.entities.length,
     };
     await db.versions.add(row);
@@ -261,10 +257,9 @@ export async function deleteProject(projectId: string) {
   requirePerm('project.manage');
   const tables = ['files', 'drawings', 'versions', 'calibrations', 'tracks', 'reports'];
   const drawings = await db.drawings.where('projectId').equals(projectId).primaryKeys();
-  await db.transaction('rw', [...tables.map((t) => (db as any)[t]), db.journal, db.projects, db.projectMembers], async () => {
+  await db.transaction('rw', [...tables.map((t) => (db as any)[t]), db.journal, db.projects], async () => {
     for (const t of tables) await (db as any)[t].where('projectId').equals(projectId).delete();
     for (const d of drawings) await db.journal.where('drawingId').equals(d).delete();
-    await db.projectMembers.where('projectId').equals(projectId).delete();
     await db.projects.delete(projectId);
   });
   await audit('project.delete', projectId, undefined, projectId);
@@ -288,7 +283,7 @@ export async function saveTrackRow(name: string, pts: any[]) {
   let len = 0;
   for (let i = 1; i < pts.length; i++) if (pts[i].x !== undefined && pts[i - 1].x !== undefined) len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) / upm;
   const id = uid();
-  await db.tracks.add({ id, projectId: open.projectId, name, startedAt: pts[0]?.t ?? Date.now(), endedAt: pts[pts.length - 1]?.t ?? Date.now(), points: pts, userId: useSession.getState().user?.id, length: len });
+   await db.tracks.add({ id, projectId: open.projectId, name, startedAt: pts[0]?.t ?? Date.now(), endedAt: pts[pts.length - 1]?.t ?? Date.now(), points: pts, length: len });
   recordChange('tracks', id, 'put', open.projectId);
 }
 

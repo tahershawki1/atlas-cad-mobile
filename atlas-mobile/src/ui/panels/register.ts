@@ -25,8 +25,7 @@ registerPanel('calib', { title: 'Calibration Wizard', component: CalibrationPane
 registerPanel('update', { title: 'Software Update', component: UpdatePanel, tall: true });
 
 // Users / sync (optional platform panels)
-import { UsersPanel, SyncPanel } from './AdminPanels';
-registerPanel('users', { title: 'Users, Roles & Audit', component: UsersPanel, tall: true });
+import { SyncPanel } from './AdminPanels';
 registerPanel('sync', { title: 'Cloud Sync', component: SyncPanel });
 
 // dev-only handle on the live module instances (used by automated UI tests)

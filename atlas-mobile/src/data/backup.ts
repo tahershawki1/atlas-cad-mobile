@@ -6,7 +6,7 @@ import { useApp } from '../app/store';
 import { ask, confirmDialog } from '../app/dialogs';
 import { audit } from '../auth/session';
 
-const PROJECT_TABLES = ['files', 'drawings', 'versions', 'calibrations', 'tracks', 'reports', 'projectMembers'] as const;
+const PROJECT_TABLES = ['files', 'drawings', 'versions', 'calibrations', 'tracks', 'reports'] as const;
 const BINARY: Record<string, string[]> = { files: ['data'], drawings: ['snapshot'], versions: ['snapshot'] };
 const MAGIC = strToU8('ATLABAK1');
 

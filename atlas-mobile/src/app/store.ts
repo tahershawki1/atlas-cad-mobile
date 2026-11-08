@@ -5,7 +5,7 @@ import { defaultSnapSettings, type SnapSettings } from '../cad/tools/snap';
 export type PanelId =
   | 'layers' | 'draw' | 'edit' | 'text' | 'props' | 'search' | 'measure' | 'gps' | 'calib'
   | 'project' | 'versions' | 'export'
-  | 'users' | 'sync' | 'settings' | 'more' | 'update' | 'info' | null;
+  | 'sync' | 'settings' | 'more' | 'update' | 'info' | null;
 
 export interface Toast { id: number; text: string; kind: 'info' | 'error' | 'success' }
 

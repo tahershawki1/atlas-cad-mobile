@@ -6,7 +6,7 @@ import { fmt } from '../common';
 import { db, type ProjectRow, type VersionRow, type DrawingRow, type FileRow } from '../../data/db';
 import { closeProject, listVersions, saveVersion, restoreVersion, currentProjectId, currentDrawingId, openProject, projectDrawings, importDrawingFile } from '../../data/projects';
 import { ask, confirmDialog } from '../../app/dialogs';
-import { can, useSession, ROLE_LABEL, logout } from '../../auth/session';
+import { can } from '../../auth/session';
 import { downloadBytes } from '../../reports/download';
 import { exportCadFile } from '../../cad/io/cadClient';
 import { unpackJson } from '../../data/compress';
@@ -31,7 +31,6 @@ export function ProjectPanel() {
     setOrig(d?.originalFileId ? (await db.files.get(d.originalFileId)) ?? null : null);
   };
   useEffect(() => { load(); }, [pid]);
-  const user = useSession((s) => s.user);
   if (!p) return <div className="empty">No project open</div>;
   const edit = async () => {
     const r = await ask('Project details', [
@@ -71,7 +70,7 @@ export function ProjectPanel() {
           {p.client && <><div>Client</div><div>{p.client}</div></>}
           {p.location && <><div>Location</div><div>{p.location}</div></>}
           <div>Created</div><div>{new Date(p.createdAt).toLocaleString()}</div>
-          <div>Signed in</div><div>{user?.displayName} ({ROLE_LABEL[useSession.getState().projectRole ?? user?.role ?? 'viewer']})</div>
+           <div>Mode</div><div>Local anonymous</div>
         </div>
       </div>
       <div className="section">Mode</div>
@@ -106,7 +105,7 @@ export function ProjectPanel() {
       <div className="section">Session</div>
       <div className="row wrap">
         <button className="btn" onClick={async () => { await closeProject(); useApp.setState({ screen: 'start', panel: null, projectId: null }); app.loadDrawing; }}><Icon name="home" />All projects</button>
-        <button className="btn" onClick={async () => { await closeProject(); logout(); useApp.setState({ screen: 'start', panel: null }); }}><Icon name="logout" />Sign out</button>
+        <button className="btn" onClick={async () => { await closeProject(); useApp.setState({ screen: 'start', panel: null }); }}><Icon name="home" />Close project</button>
       </div>
     </div>
   );
@@ -219,7 +218,6 @@ const MORE: { id: PanelId; label: string; icon: string }[] = [
   { id: 'export', label: 'Export', icon: 'export' },
   { id: 'calib', label: 'Calibration', icon: 'calibrate' },
   { id: 'update', label: 'Software Update', icon: 'sync' },
-  { id: 'users', label: 'Users & roles', icon: 'users' },
   { id: 'sync', label: 'Cloud sync', icon: 'sync' },
   { id: 'settings', label: 'Settings', icon: 'settings' },
   { id: 'props', label: 'Properties', icon: 'props' },

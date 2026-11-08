@@ -21,9 +21,7 @@ export interface OutboxRow { seq?: number; table: string; rowId: string; op: 'pu
 export interface SettingRow { key: string; value: any }
 
 export class FiberLensDB extends Dexie {
-  users!: Table<UserRow, string>;
   projects!: Table<ProjectRow, string>;
-  projectMembers!: Table<ProjectMemberRow, [string, string]>;
   files!: Table<FileRow, string>;
   drawings!: Table<DrawingRow, string>;
   journal!: Table<JournalRow, [string, number]>;
@@ -40,7 +38,6 @@ export class FiberLensDB extends Dexie {
     this.version(1).stores({
       users: 'id, &username, role',
       projects: 'id, name, updatedAt',
-      projectMembers: '[projectId+userId], projectId, userId',
       files: 'id, projectId, kind',
       drawings: 'id, projectId',
       journal: '[drawingId+seq], drawingId',
@@ -67,6 +64,7 @@ export class FiberLensDB extends Dexie {
       maintenance: null,
       detectRules: null,
     });
+    this.version(3).stores({ users: null, projectMembers: null });
   }
 }
 
