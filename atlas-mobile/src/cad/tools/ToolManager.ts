@@ -223,8 +223,10 @@ export class ToolManager {
       // A finger is less stable than a mouse. Give taps a larger dead-zone
       // and a short settling period so tapping empty space to clear selection
       // cannot become an accidental pan.
-      const thresh = e.pointerType === 'touch' ? 16 : 4;
-      const touchSettled = e.pointerType !== 'touch' || performance.now() - dn.t >= 160;
+      const thresh = e.pointerType === 'touch' ? 12 : 4;
+      // Keep panning responsive; only a very short settling window protects
+      // ordinary taps from becoming a pan.
+      const touchSettled = e.pointerType !== 'touch' || performance.now() - dn.t >= 50;
       if (!dn.moved && dist > thresh && touchSettled) {
         dn.moved = true;
         clearTimeout(this.longPressTimer);
