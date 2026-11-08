@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>FiberLens</string>
+        <string>ATLAS CAD</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -65,13 +65,9 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>FiberLens shows your position inside the CAD drawing and records field tracks.</string>
+	<string>ATLAS CAD shows your position inside the CAD drawing and records GPS tracks.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>FiberLens shows your position inside the CAD drawing and records field tracks.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Take site photos and attach them to FTTH objects and notes.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Attach existing photos to FTTH objects and notes.</string>
+	<string>ATLAS CAD shows your position inside the CAD drawing and records GPS tracks.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Save exported drawings and images.</string>
 	<key>NSMotionUsageDescription</key>

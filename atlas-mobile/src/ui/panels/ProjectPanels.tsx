@@ -15,7 +15,6 @@ import { exportBackup, importBackup } from '../../data/backup';
 import { useDialog } from '../../app/dialogs';
 import { XrefSection } from './XrefSection';
 import { unpackDrawing } from '../../data/drawingCodec';
-import { isPhone } from '../useDevice';
 import { useT, useLang } from '../../app/i18n';
 
 export function ProjectPanel() {
@@ -78,7 +77,7 @@ export function ProjectPanel() {
       <div className="section">Mode</div>
       <div className="grid2">
         <button className={`btn ${st.mode === 'design' ? 'primary' : ''}`} onClick={() => setMode('design')}>Design</button>
-        <button className={`btn ${st.mode === 'asbuilt' ? 'primary' : ''}`} onClick={() => setMode('asbuilt')} disabled={!can('field.edit')}>As-Built</button>
+        <button className={`btn ${st.mode === 'asbuilt' ? 'primary' : ''}`} onClick={() => setMode('asbuilt')} disabled={!can('cad.edit')}>As-Built</button>
       </div>
       <div className="section">Drawings</div>
       <div className="list">
@@ -138,7 +137,6 @@ export function VersionsPanel() {
       <div className="row wrap" style={{ marginBottom: 10 }}>
         <button className="btn primary" disabled={!can('version.manage')} onClick={() => save('design')}><Icon name="save" />Save V{(list[0]?.number ?? 0) + 1}</button>
         <button className="btn" disabled={!can('version.manage')} onClick={() => save('asbuilt')}>Save As-Built</button>
-        <button className="btn" onClick={() => useApp.getState().set({ panel: 'compare' })}><Icon name="compare" />Compare</button>
       </div>
       <div className="list">
         {list.map((v) => (
@@ -205,31 +203,22 @@ export function SettingsPanel() {
         <div>Text pass</div><div>{v?.stats.textMs.toFixed(1)} ms ({v?.stats.texts})</div>
         <div>Storage</div><div>{usage}</div>
         <div>CAD engine</div><div>acad-ts (MIT) · DWG R14–2018+, DXF R12+</div>
-        <div>Version</div><div>FiberLens 1.0.0</div>
+        <div>Version</div><div>ATLAS CAD 1.0.0</div>
       </div>
       {app.doc?.drawing.meta.notes.length ? <><div className="section">Import notes</div><div className="small muted" style={{ maxHeight: 140, overflow: 'auto' }}>{app.doc.drawing.meta.notes.map((n, i) => <div key={i}>{n}</div>)}</div></> : null}
     </div>
   );
 }
 
-const MORE_FIELD: { id: PanelId; label: string; icon: string }[] = [
+const MORE: { id: PanelId; label: string; icon: string }[] = [
   { id: 'text', label: 'Text', icon: 'text' },
   { id: 'search', label: 'Search', icon: 'search' },
   { id: 'measure', label: 'Measure', icon: 'measure' },
-  { id: 'survey', label: 'Survey', icon: 'survey' },
-  { id: 'notes', label: 'Notes', icon: 'note' },
-  { id: 'photos', label: 'Photos', icon: 'photo' },
-];
-
-const MORE: { id: PanelId; label: string; icon: string }[] = [
   { id: 'project', label: 'Project', icon: 'folder' },
   { id: 'versions', label: 'Versions', icon: 'version' },
-  { id: 'compare', label: 'Design vs As-Built', icon: 'compare' },
   { id: 'export', label: 'Export', icon: 'export' },
-  { id: 'reports', label: 'Reports & BOQ', icon: 'report' },
-  { id: 'maintenance', label: 'Maintenance & Faults', icon: 'wrench' },
-  { id: 'qr', label: 'QR codes', icon: 'qr' },
   { id: 'calib', label: 'Calibration', icon: 'calibrate' },
+  { id: 'update', label: 'Software Update', icon: 'sync' },
   { id: 'users', label: 'Users & roles', icon: 'users' },
   { id: 'sync', label: 'Cloud sync', icon: 'sync' },
   { id: 'settings', label: 'Settings', icon: 'settings' },
@@ -240,7 +229,7 @@ export function MorePanel() {
   const t = useT();
   return (
     <div className="tool-grid">
-      {[...(isPhone() ? MORE_FIELD : []), ...MORE].map((m) => <button key={m.id} className="tool-btn" onClick={() => useApp.getState().set({ panel: m.id })}><Icon name={m.icon} />{t(m.label)}</button>)}
+      {MORE.map((m) => <button key={m.id} className="tool-btn" onClick={() => useApp.getState().set({ panel: m.id })}><Icon name={m.icon} />{t(m.label)}</button>)}
     </div>
   );
 }

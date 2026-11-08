@@ -6,9 +6,9 @@ import { useApp } from '../app/store';
 import { ask, confirmDialog } from '../app/dialogs';
 import { audit } from '../auth/session';
 
-const PROJECT_TABLES = ['files', 'drawings', 'versions', 'calibrations', 'tracks', 'ftthObjects', 'cables', 'cores', 'splitters', 'splices', 'photos', 'notes', 'surveys', 'surveyItems', 'faults', 'maintenance', 'reports', 'detectRules', 'projectMembers'] as const;
-const BINARY: Record<string, string[]> = { files: ['data'], drawings: ['snapshot'], versions: ['snapshot', 'ftth'], photos: ['data'] };
-const MAGIC = strToU8('FLBAK1');
+const PROJECT_TABLES = ['files', 'drawings', 'versions', 'calibrations', 'tracks', 'reports', 'projectMembers'] as const;
+const BINARY: Record<string, string[]> = { files: ['data'], drawings: ['snapshot'], versions: ['snapshot'] };
+const MAGIC = strToU8('ATLABAK1');
 
 /** Full offline project backup (.flbak = zip, optionally AES-GCM encrypted). */
 export async function exportBackup(projectId: string, passphrase?: string) {
@@ -29,7 +29,7 @@ export async function exportBackup(projectId: string, passphrase?: string) {
     const drawings = manifest.drawings.map((d: any) => d.id);
     manifest.journal = [];
     for (const d of drawings) manifest.journal.push(...(await db.journal.where('drawingId').equals(d).toArray()));
-    files['manifest.json'] = strToU8(JSON.stringify({ version: 1, createdAt: Date.now(), app: 'FiberLens 1.0.0', data: manifest }));
+    files['manifest.json'] = strToU8(JSON.stringify({ version: 1, createdAt: Date.now(), app: 'ATLAS CAD 1.0.0', data: manifest }));
     let out: Uint8Array = zipSync(files, { level: 1 });
     if (passphrase) {
       const enc = await encryptBytes(out, passphrase);
@@ -53,7 +53,7 @@ export function importBackup(): Promise<void> {
       if (!f) return resolve();
       try {
         let bytes: Uint8Array = new Uint8Array(await f.arrayBuffer());
-        if (strFromU8(bytes.slice(0, MAGIC.length)) === 'FLBAK1') {
+        if (strFromU8(bytes.slice(0, MAGIC.length)) === 'ATLABAK1') {
           const r = await ask('Encrypted backup', [{ key: 'pw', label: 'Passphrase', type: 'password' }]);
           if (!r) return resolve();
           bytes = await decryptBytes(bytes.slice(MAGIC.length), r.pw);

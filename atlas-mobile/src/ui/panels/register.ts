@@ -6,6 +6,7 @@ import { SearchPanel } from './SearchPanel';
 import { ExportPanel } from './ExportPanel';
 import { ProjectPanel, VersionsPanel, SettingsPanel, MorePanel } from './ProjectPanels';
 import { GpsPanel, CalibrationPanel } from '../gps/GpsPanels';
+import { UpdatePanel } from './UpdatePanel';
 
 registerPanel('layers', { title: 'Layer Manager', component: LayersPanel, tall: true });
 registerPanel('props', { title: 'Properties', component: PropertiesPanel, tall: true });
@@ -21,35 +22,16 @@ registerPanel('settings', { title: 'Settings', component: SettingsPanel, tall: t
 registerPanel('more', { title: 'More', component: MorePanel });
 registerPanel('gps', { title: 'GPS', component: GpsPanel, tall: true });
 registerPanel('calib', { title: 'Calibration Wizard', component: CalibrationPanel, tall: true });
+registerPanel('update', { title: 'Software Update', component: UpdatePanel, tall: true });
 
-// ---- V2: FTTH, field, outputs, admin ----
-import '../../ftth/tools';
-import '../../ftth/overlay';
-import '../ftth/integration';
-import { FtthPanel } from '../ftth/FtthPanel';
-import { SurveyPanel, NotesPanel, PhotosPanel, MaintenancePanel } from '../field/FieldPanels';
-import { QrPanel, ComparePanel, ReportsPanel } from '../ftth/OutputPanels';
+// Users / sync (optional platform panels)
 import { UsersPanel, SyncPanel } from './AdminPanels';
-
-registerPanel('ftth', { title: 'FTTH Network', component: FtthPanel, tall: true });
-registerPanel('survey', { title: 'Field Survey', component: SurveyPanel, tall: true });
-registerPanel('notes', { title: 'Field Notes', component: NotesPanel, tall: true });
-registerPanel('photos', { title: 'Photos & Media', component: PhotosPanel, tall: true });
-registerPanel('maintenance', { title: 'Maintenance & Faults', component: MaintenancePanel, tall: true });
-registerPanel('qr', { title: 'QR Codes', component: QrPanel, tall: true });
-registerPanel('compare', { title: 'Design vs As-Built', component: ComparePanel, tall: true });
-registerPanel('reports', { title: 'Reports & BOQ', component: ReportsPanel, tall: true });
 registerPanel('users', { title: 'Users, Roles & Audit', component: UsersPanel, tall: true });
 registerPanel('sync', { title: 'Cloud Sync', component: SyncPanel });
 
 // dev-only handle on the live module instances (used by automated UI tests)
-import * as __ftthStore from '../../ftth/store';
-import * as __topology from '../../ftth/topology';
-import * as __detect from '../../ftth/detect';
 import * as __projects from '../../data/projects';
-import * as __field from '../../field/fieldData';
 import * as __gps from '../../gps/controller';
-import * as __boq from '../../ftth/boq';
 import * as __reports from '../../reports/reports';
 import * as __sync from '../../data/sync';
-if (import.meta.env.DEV) (window as any).__fl = { ftth: __ftthStore, topology: __topology, detect: __detect, projects: __projects, field: __field, gps: __gps, boq: __boq, reports: __reports, sync: __sync };
+if (import.meta.env.DEV) (window as any).__fl = { projects: __projects, gps: __gps, reports: __reports, sync: __sync };

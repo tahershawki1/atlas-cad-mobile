@@ -12,7 +12,7 @@ export function pdfReport(title: string, subtitle: string, sections: { title: st
   const header = () => {
     doc.setFontSize(14); doc.setTextColor(10, 40, 80); doc.text(ascii(title), m, y + 5);
     doc.setFontSize(8); doc.setTextColor(90); doc.text(ascii(subtitle), m, y + 10);
-    doc.text(`FiberLens · ${new Date().toLocaleString()}`, W - m, y + 10, { align: 'right' } as any);
+    doc.text(`ATLAS CAD · ${new Date().toLocaleString()}`, W - m, y + 10, { align: 'right' } as any);
     doc.setDrawColor(10, 40, 80); doc.line(m, y + 12, W - m, y + 12);
     y += 16;
   };

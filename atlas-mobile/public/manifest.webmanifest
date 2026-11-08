@@ -1,7 +1,7 @@
 {
-  "name": "FiberLens — Smart CAD + FTTH",
-  "short_name": "FiberLens",
-  "description": "Smart CAD + FTTH field engineering — your DWG is the map.",
+  "name": "ATLAS CAD",
+  "short_name": "ATLAS",
+  "description": "Smart CAD — your DWG is the map.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

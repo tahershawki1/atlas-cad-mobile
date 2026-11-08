@@ -9,7 +9,7 @@
     "test": "vitest run",
     "typecheck": "tsc",
     "check-cad": "tsx scripts/check-cad.ts",
-    "deploy:web": "npm run build && wrangler pages deploy dist --project-name fiberlens --branch main --commit-dirty=true"
+    "deploy:web": "npm run build && wrangler pages deploy dist --project-name atlas-cad --branch main --commit-dirty=true"
   },
   "keywords": [],
   "author": "",

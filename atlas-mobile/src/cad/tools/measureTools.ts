@@ -129,12 +129,12 @@ export class AngleTool extends PtsMeasure {
   }
 }
 
-/** Length of an object (cable / duct / any curve) or area of closed objects */
+/** Length of an object (any curve) or area of closed objects */
 export class ObjectLengthTool extends Tool {
   readonly id = 'mobject'; readonly label = 'Object Length';
   wantsSnap = false;
   private picked: number[] = [];
-  protected onActivate() { this.setPrompt('Tap cables / ducts / polylines to sum their lengths (Enter = save)'); }
+  protected onActivate() { this.setPrompt('Tap polylines / arcs / splines to sum their lengths (Enter = save)'); }
   reset() { this.picked = []; }
   click(e: ToolEvent) {
     const id = this.host.doc.pick(e.raw, this.host.pickTol(e.pointerType === 'touch' ? 14 : 6));
@@ -151,7 +151,7 @@ export class ObjectLengthTool extends Tool {
     if (this.picked.length) {
       const T = this.total();
       const layer = this.host.doc.get(this.picked[0])?.layer;
-      useMeasure.getState().add({ kind: 'Cable/duct length', text: `${this.picked.length} obj (${layer}) · ${fmtLen(T)}`, value: T, meters: T / upm(), at: Date.now() });
+      useMeasure.getState().add({ kind: 'Object length', text: `${this.picked.length} obj (${layer}) · ${fmtLen(T)}`, value: T, meters: T / upm(), at: Date.now() });
       this.picked = []; this.host.selection.clear();
       this.setPrompt('Saved. Tap more objects or Enter to finish');
     } else this.host.finish();

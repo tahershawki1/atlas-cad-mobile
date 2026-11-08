@@ -1,6 +1,6 @@
 /**
  * Save a generated file. In the browser: regular download. On Android (Capacitor): written to
- * Documents/FiberLens and offered through the system share sheet (email, WhatsApp, Drive…).
+ * Documents/ATLAS CAD and offered through the system share sheet (email, WhatsApp, Drive…).
  */
 import { isNative, Filesystem, Directory, Share } from '../platform/native';
 import { isIOS } from '../platform/ios';
@@ -17,7 +17,7 @@ export async function downloadBytes(name: string, data: Uint8Array | Blob, mime 
     const bytes = data instanceof Blob ? new Uint8Array(await data.arrayBuffer()) : data;
     let res: { uri: string };
     try {
-      res = await Filesystem.writeFile({ path: `FiberLens/${safe}`, data: toBase64(bytes), directory: Directory.Documents, recursive: true });
+      res = await Filesystem.writeFile({ path: `ATLAS/${safe}`, data: toBase64(bytes), directory: Directory.Documents, recursive: true });
     } catch {
       // scoped storage fallback: app cache (always writable), then share
       res = await Filesystem.writeFile({ path: safe, data: toBase64(bytes), directory: Directory.Cache, recursive: true });

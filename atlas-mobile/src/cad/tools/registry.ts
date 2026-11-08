@@ -51,11 +51,11 @@ export const TOOL_INFO: ToolInfo[] = [
   { id: 'mdist', label: 'Distance', icon: 'distance', group: 'measure', make: () => new M.DistanceTool() },
   { id: 'marea', label: 'Area', icon: 'area', group: 'measure', make: () => new M.AreaTool() },
   { id: 'mangle', label: 'Angle', icon: 'angle', group: 'measure', make: () => new M.AngleTool() },
-  { id: 'mobject', label: 'Cable / Duct length', icon: 'cable', group: 'measure', make: () => new M.ObjectLengthTool() },
+  { id: 'mobject', label: 'Object length', icon: 'measure', group: 'measure', make: () => new M.ObjectLengthTool() },
   { id: 'mobjdist', label: 'Object ↔ Object', icon: 'measure', group: 'measure', make: () => new M.ObjDistanceTool() },
 ];
 
-/** extra tools registered by feature modules (FTTH, calibration, survey…) */
+/** extra tools registered by feature modules (e.g. calibration helpers) */
 export const extraTools: { id: string; make: () => Tool }[] = [];
 
 /** Register every interactive tool with the tool manager. */

@@ -3,7 +3,7 @@ import React from 'react';
 type Ext = (props: { entityId: number }) => React.ReactElement | null;
 const exts: Ext[] = [];
 
-/** feature modules (FTTH, notes, photos) register sections shown in the entity info card */
+/** feature modules register sections shown in the entity info card */
 export function registerInfoExtension(e: Ext) { exts.push(e); }
 
 export function InfoExtensions({ entityId }: { entityId: number }) {

@@ -12,7 +12,7 @@ export interface SearchHit {
   /** fallback location */
   x?: number; y?: number;
   score: number;
-  /** custom action (e.g. open FTTH object card) */
+  /** custom action (e.g. open a CAD target) */
   open?: () => void;
 }
 
@@ -22,7 +22,7 @@ export function registerSearchProvider(name: string, fn: SearchProvider) { provi
 
 const norm = (s: string) => s.toLowerCase().replace(/[\s_\-]+/g, '');
 
-/** score: exact > prefix > contains (on normalised strings, so "FTB-023" ≈ "ftb 023" ≈ "FTB023") */
+/** score: exact > prefix > contains (on normalised strings, so "A-023" ≈ "a 023" ≈ "A023") */
 export function matchScore(text: string, q: string): number {
   if (!text) return 0;
   const t = norm(text), n = norm(q);

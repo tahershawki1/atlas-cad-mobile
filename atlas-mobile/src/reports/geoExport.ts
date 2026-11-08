@@ -88,7 +88,7 @@ export function kmlToKmz(kml: string): Uint8Array {
 }
 
 export function tracksToGpx(tracks: TrackRow[]): string {
-  const out = ['<?xml version="1.0" encoding="UTF-8"?>', '<gpx version="1.1" creator="FiberLens" xmlns="http://www.topografix.com/GPX/1/1">'];
+  const out = ['<?xml version="1.0" encoding="UTF-8"?>', '<gpx version="1.1" creator="ATLAS CAD" xmlns="http://www.topografix.com/GPX/1/1">'];
   for (const t of tracks) {
     out.push(`<trk><name>${esc(t.name)}</name><trkseg>`);
     for (const p of t.points) out.push(`<trkpt lat="${p.lat.toFixed(8)}" lon="${p.lon.toFixed(8)}">${p.alt !== undefined ? `<ele>${p.alt.toFixed(2)}</ele>` : ''}<time>${new Date(p.t).toISOString()}</time></trkpt>`);

@@ -132,7 +132,7 @@ export function ExportPanel() {
         <button className="btn" onClick={() => table('xlsx')}>Excel</button>
       </div>
       {!isUsable(cal) && <p className="small muted">GeoJSON/KML need a calibration (GPS → Calibration wizard).</p>}
-      <p className="small muted">FTTH network, BOQ and field reports: More → Reports.</p>
+      <p className="small muted">CAD tables: whole drawing, visible area or selection.</p>
     </div>
   );
 }

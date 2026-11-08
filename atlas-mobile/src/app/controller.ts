@@ -19,7 +19,7 @@ type Hook = () => void;
 
 /**
  * Application controller: owns the CAD view, document, tools and selection and
- * bridges them to the React UI (zustand store). Feature modules (GPS, FTTH, project
+ * bridges them to the React UI (zustand store). Feature modules (GPS, project
  * persistence) attach through the hooks below.
  */
 export class AppController {
@@ -114,8 +114,7 @@ export class AppController {
         const strip = (ls: any[]) => JSON.stringify(ls.map(({ on, frozen, locked, ...rest }) => rest));
         if (strip(t.layers.before) === strip(t.layers.after)) return null;
       }
-      if (can('field.edit') && useApp.getState().mode === 'asbuilt') return null;
-      return can('field.edit') ? 'Switch the project to As-Built mode to record field changes on the drawing (Project → As-Built).' : 'Your role is read-only for drawing edits.';
+      return 'Your role is read-only for drawing edits.';
     };
     this.doc.onRefused = (m) => useApp.getState().toast(m, 'error');
     this.docUnsubs.push(this.doc.onCommit((tx, kind) => { if (kind === 'do') audit('cad.' + tx.label.toLowerCase().replace(/\s+/g, '-'), `${tx.added.length}+ ${tx.modified.length}~ ${tx.removed.length}-`); }));
@@ -198,3 +197,4 @@ export class AppController {
 
 export const app = new AppController();
 (window as any).fiberlens = app;
+(window as any).atlas = app;

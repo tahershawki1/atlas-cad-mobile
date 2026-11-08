@@ -25,7 +25,7 @@ export function hlcMerge(remote: string) {
   if (w > lastWall) { lastWall = w; counter = 0; }
 }
 
-export const SYNC_TABLES = ['ftthObjects', 'cables', 'cores', 'splitters', 'splices', 'notes', 'photos', 'surveys', 'surveyItems', 'faults', 'maintenance', 'tracks', 'calibrations', 'versions', 'drawings'] as const;
+export const SYNC_TABLES = ['tracks', 'calibrations', 'versions', 'drawings'] as const;
 
 export function recordChange(table: string, rowId: string, op: 'put' | 'delete', projectId?: string, payload?: any) {
   db.syncOutbox.add({ table, rowId, op, hlc: hlc(), projectId, payload }).catch(() => {});
@@ -59,8 +59,6 @@ export async function setSyncConfig(c: SyncConfig) { await setSetting('sync', c)
 const conflicts: { table: string; rowId: string; local: any; remote: any; at: number }[] = [];
 export function syncConflicts() { return conflicts; }
 
-const tableHasRowsKey = (t: string) => t === 'cores' ? null : 'id';
-
 export async function syncNow(adapter?: SyncAdapter): Promise<{ pushed: number; pulled: number; conflicts: number }> {
   const cfg = await getSyncConfig();
   if (!cfg.url) throw new Error('No sync server configured');
@@ -76,9 +74,8 @@ export async function syncNow(adapter?: SyncAdapter): Promise<{ pushed: number; 
     let row: any = undefined;
     if (o.op === 'put') {
       const t = (db as any)[o.table];
-      row = o.table === 'cores' ? await t.where('cableId').equals(o.rowId).toArray() : await t.get(o.rowId);
-      if (row && o.table === 'photos') row = { ...row, data: Array.from(row.data as Uint8Array) };
-      if (row && (o.table === 'drawings' || o.table === 'versions')) row = { ...row, snapshot: Array.from(row.snapshot), ftth: row.ftth ? Array.from(row.ftth) : undefined };
+      row = await t.get(o.rowId);
+      if (row && (o.table === 'drawings' || o.table === 'versions')) row = { ...row, snapshot: Array.from(row.snapshot) };
     }
     const ch: RemoteChange = { table: o.table, rowId: o.rowId, op: o.op, hlc: o.hlc, projectId: o.projectId };
     if (row !== undefined) {
@@ -101,10 +98,8 @@ export async function syncNow(adapter?: SyncAdapter): Promise<{ pushed: number; 
     if (ch.enc && cfg.passphrase) row = await decryptJson(ch.enc, cfg.passphrase);
     if (ch.op === 'delete') { await t.delete(ch.rowId); continue; }
     if (!row) continue;
-    if (ch.table === 'cores') { await t.where('cableId').equals(ch.rowId).delete(); await t.bulkPut(row); continue; }
-    if (ch.table === 'photos' && Array.isArray(row.data)) row.data = new Uint8Array(row.data);
-    if ((ch.table === 'drawings' || ch.table === 'versions') && Array.isArray(row.snapshot)) { row.snapshot = new Uint8Array(row.snapshot); if (row.ftth) row.ftth = new Uint8Array(row.ftth); }
-    const local = tableHasRowsKey(ch.table) ? await t.get(ch.rowId) : null;
+    if ((ch.table === 'drawings' || ch.table === 'versions') && Array.isArray(row.snapshot)) { row.snapshot = new Uint8Array(row.snapshot); }
+    const local = await t.get(ch.rowId);
     if (local && local.updatedAt && row.updatedAt && local.updatedAt > row.updatedAt) {
       conflicts.push({ table: ch.table, rowId: ch.rowId, local, remote: row, at: Date.now() });
       nConf++;

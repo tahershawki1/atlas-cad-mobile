@@ -6,7 +6,7 @@ import { fmt } from './common';
 import { entityLength, entityArea } from '../cad/edit/measure';
 import { InfoExtensions } from './infoExtensions';
 
-/** Quick info for the tapped entity (FTTH modules add their own sections). */
+/** Quick info for the tapped entity. */
 export function InfoCard() {
   const id = useApp((s) => s.infoEntity);
   useApp((s) => s.docRev);

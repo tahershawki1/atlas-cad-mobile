@@ -1,5 +1,5 @@
 import { db, uid, type ProjectRow, type VersionRow, type DrawingRow, type CalibrationRow } from './db';
-import { packJson, unpackJson, sha256 } from './compress';
+import { sha256 } from './compress';
 import { app } from '../app/controller';
 import { useApp } from '../app/store';
 import type { Drawing, Entity } from '../cad/model/types';
@@ -12,9 +12,7 @@ import { recordChange } from './sync';
 import { packDrawing, unpackDrawing } from './drawingCodec';
 import { repairAttributes } from '../cad/io/repair';
 
-/** FTTH tables included in version snapshots and backups */
-export const FTTH_TABLES = ['ftthObjects', 'cables', 'cores', 'splitters', 'splices'] as const;
-export const FIELD_TABLES = ['notes', 'surveys', 'surveyItems', 'faults', 'maintenance', 'tracks', 'calibrations'] as const;
+/** ATLAS CAD-only: version snapshots contain CAD drawing data only. */
 
 /** drawing parsed by the last import — reused by openProject instead of decoding it again */
 let justImported: { drawingId: string; drawing: Drawing } | null = null;
@@ -181,12 +179,6 @@ export async function closeProject() {
   open = null;
 }
 
-async function ftthSnapshot(projectId: string): Promise<Uint8Array> {
-  const data: Record<string, unknown[]> = {};
-  for (const t of FTTH_TABLES) data[t] = await (db as any)[t].where('projectId').equals(projectId).toArray();
-  return packJson(data);
-}
-
 function diffSummary(prev: Drawing | null, cur: Drawing): { text: string; added: number; removed: number; modified: number } {
   if (!prev) return { text: `${cur.entities.length} entities`, added: cur.entities.length, removed: 0, modified: 0 };
   const key = (e: Entity) => e.handle ? 'h' + e.handle : 'i' + e.id;
@@ -208,7 +200,7 @@ export async function listVersions(drawingId: string): Promise<VersionRow[]> {
   return (await db.versions.where('drawingId').equals(drawingId).toArray()).sort((a, b) => b.number - a.number);
 }
 
-/** Save V(n+1) (or As-Built) with drawing + FTTH snapshot and an automatic change summary. */
+/** Save V(n+1) (or As-Built) with a CAD drawing snapshot and an automatic change summary. */
 export async function saveVersion(label?: string, kind: VersionRow['kind'] = 'design', note = ''): Promise<VersionRow | null> {
   if (!open || !app.doc) return null;
   requirePerm('version.manage');
@@ -226,7 +218,7 @@ export async function saveVersion(label?: string, kind: VersionRow['kind'] = 'de
     const row: VersionRow = {
       id: uid(), projectId: o.projectId, drawingId: o.drawingId, number,
       label: label || (kind === 'asbuilt' ? `As-Built V${number}` : `V${number}`), kind,
-      snapshot: c?.snap ?? packDrawing(cur), ftth: await ftthSnapshot(o.projectId), createdAt: Date.now(),
+      snapshot: c?.snap ?? packDrawing(cur), createdAt: Date.now(),
       userId: useSession.getState().user?.id, userName: useSession.getState().user?.displayName,
       summary: diff.text + (note ? ` — ${note}` : ''), parentId: last?.id, entityCount: cur.entities.length,
     };
@@ -243,23 +235,16 @@ export async function saveVersion(label?: string, kind: VersionRow['kind'] = 'de
 }
 
 /** Restore a version as the new working copy (history is preserved: a "restore" version is created). */
-export async function restoreVersion(versionId: string, restoreFtth = true) {
+export async function restoreVersion(versionId: string) {
   if (!open) return;
   requirePerm('version.manage');
   const v = await db.versions.get(versionId);
   if (!v) return;
   const o = open;
   const drawing = unpackDrawing(v.snapshot);
-  await db.transaction('rw', [db.drawings, db.journal, ...FTTH_TABLES.map((t) => (db as any)[t])], async () => {
+  await db.transaction('rw', [db.drawings, db.journal], async () => {
     await db.drawings.update(o.drawingId, { snapshot: v.snapshot, journalSeq: 0, snapshotAt: Date.now(), entityCount: drawing.entities.length, updatedAt: Date.now() });
     await db.journal.where('drawingId').equals(o.drawingId).delete();
-    if (restoreFtth && v.ftth) {
-      const data = unpackJson<Record<string, any[]>>(v.ftth);
-      for (const t of FTTH_TABLES) {
-        await (db as any)[t].where('projectId').equals(o.projectId).delete();
-        if (data[t]?.length) await (db as any)[t].bulkPut(data[t]);
-      }
-    }
   });
   await audit('version.restore', v.label, undefined, o.projectId);
   const pid = o.projectId, did = o.drawingId;
@@ -274,7 +259,7 @@ export async function loadVersionDrawing(versionId: string): Promise<{ drawing: 
 
 export async function deleteProject(projectId: string) {
   requirePerm('project.manage');
-  const tables = ['files', 'drawings', 'versions', 'calibrations', 'tracks', ...FTTH_TABLES, 'photos', 'notes', 'surveys', 'surveyItems', 'faults', 'maintenance', 'reports'];
+  const tables = ['files', 'drawings', 'versions', 'calibrations', 'tracks', 'reports'];
   const drawings = await db.drawings.where('projectId').equals(projectId).primaryKeys();
   await db.transaction('rw', [...tables.map((t) => (db as any)[t]), db.journal, db.projects, db.projectMembers], async () => {
     for (const t of tables) await (db as any)[t].where('projectId').equals(projectId).delete();

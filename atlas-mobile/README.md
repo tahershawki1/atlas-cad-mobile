@@ -1,22 +1,17 @@
-# FiberLens — Smart CAD + FTTH Field Engineering Platform
+# ATLAS CAD Mobile — Smart CAD (Android / iOS / Web)
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-React%20%2B%20Vite-3178C6?logo=typescript&logoColor=white)
 ![WebGL2](https://img.shields.io/badge/renderer-WebGL2-990000)
 ![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Web-informational)
 ![Offline](https://img.shields.io/badge/works-offline-success)
 
-**Live web app:** https://fiberlens.pages.dev · mirror: https://ahshika.github.io/FiberLens/
-
-**Your DWG is the map.** FiberLens opens DWG/DXF drawings on Android tablets/phones and the
+**Your DWG is the map.** ATLAS CAD opens DWG/DXF drawings on Android tablets/phones and the
 desktop browser, edits them like a CAD program, puts your live GPS position *inside* the drawing,
-and understands FTTH networks (FAT/FDT/FDH/closures/cables/cores/splitters) for field work,
-as-built, maintenance, BOQ and reports — fully offline.
+and exports — fully offline. See `docs/09-UPDATE.md` for the GitHub Releases self-update flow.
 
-> 🇪🇬 **بالعربي:** FiberLens هو برنامج CAD ذكي لمشاريع الفايبر FTTH. يفتح ملفات DWG/DXF ويعرضها
-> بدقة على الموبايل والتابلت، ويسمح بالتعديل والرسم والكتابة، ويعرض موقعك الحالي **📍 YOU ARE HERE
-> داخل ملف الـCAD نفسه** بدون أي خريطة منفصلة. يفهم عناصر الشبكة (FAT / FDT / FDH / Closure /
-> الكابلات / الشعيرات / الـSplitters)، ويعمل Trace للمسار حتى الـOLT، ويدعم المسح الميداني والصور
-> والملاحظات والـAs-Built والصيانة والـBOQ والتقارير — وكل ذلك يعمل بدون إنترنت.
+> 🇪🇬 **بالعربي:** ATLAS CAD هو برنامج CAD ذكي. يفتح ملفات DWG/DXF ويعرضها بدقة على الموبايل
+> والتابلت، ويسمح بالتعديل والرسم والكتابة، ويعرض موقعك الحالي **📍 YOU ARE HERE** داخل
+> ملف الـCAD نفسه بدون أي خريطة منفصلة — وكل ذلك يعمل بدون إنترنت.
 
 <p align="center">
   <img src="docs/images/gps-you-are-here.png" width="860" alt="Live GPS position inside the DWG">

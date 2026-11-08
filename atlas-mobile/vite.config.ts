@@ -7,10 +7,11 @@ import fs from 'node:fs';
 /**
  * Offline web app (iPhone "Add to Home Screen", any browser): emit sw.js that precaches every
  * built file + the public assets, versioned by the hash of the file list + the worker template.
+ * Also emits version.json so the web build can show its build number and compare with releases.
  */
 function serviceWorker(): Plugin {
   return {
-    name: 'fiberlens-sw',
+    name: 'atlas-sw',
     apply: 'build',
     generateBundle(_opts, bundle) {
       const pub = ['manifest.webmanifest', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'];
@@ -19,6 +20,14 @@ function serviceWorker(): Plugin {
       const version = createHash('sha256').update(files.sort().join('|') + template).digest('hex').slice(0, 12);
       const src = template.replace('__VERSION__', version).replace('__FILES__', JSON.stringify(files));
       this.emitFile({ type: 'asset', fileName: 'sw.js', source: src });
+      try {
+        const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+        this.emitFile({
+          type: 'asset',
+          fileName: 'version.json',
+          source: JSON.stringify({ version: pkg.version, build: version, at: new Date().toISOString() }, null, 2),
+        });
+      } catch { /* no package.json (tests) — skip */ }
     },
   };
 }

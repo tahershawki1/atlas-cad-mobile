@@ -107,7 +107,7 @@ export function exportViewPdf(view: CadView, o: PdfOptions): Uint8Array {
   doc.setFontSize(12); doc.text(o.title.replace(/[^\x20-\x7e]/g, '?'), margin + 3, ty + 5);
   doc.setFontSize(8);
   doc.text(`${(o.subtitle ?? '').replace(/[^\x20-\x7e]/g, '?')}`, margin + 3, ty + 10);
-  doc.text(`FiberLens · ${new Date().toLocaleString()}${o.author ? ' · ' + o.author : ''}`, margin + 3, ty + 14);
+  doc.text(`ATLAS CAD · ${new Date().toLocaleString()}${o.author ? ' · ' + o.author : ''}`, margin + 3, ty + 14);
   // scale bar (metres) when the drawing is calibrated or metric
   const upm = o.unitsPerMeter ?? 1;
   const mmPerMeter = cam.scale * k * upm;

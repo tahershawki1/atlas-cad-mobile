@@ -97,7 +97,7 @@ export function StartScreen() {
   };
 
   const newEmpty = async () => {
-    const r = await ask('New blank project', [{ key: 'name', label: 'Project name', value: 'New FTTH project' }], { okLabel: 'Create' });
+    const r = await ask('New blank project', [{ key: 'name', label: 'Project name', value: 'New ATLAS project' }], { okLabel: 'Create' });
     if (!r) return;
     const p = await createProject({ name: r.name });
     await newBlankDrawing(p.id, 'Drawing 1');
@@ -113,8 +113,8 @@ export function StartScreen() {
         <div className="hero">
           <Logo size={56} />
           <div className="grow">
-            <h1>FiberLens</h1>
-            <p>{t('Smart CAD + FTTH Field Engineering — your DWG is the map.')}</p>
+            <h1>ATLAS CAD</h1>
+            <p>{t('ATLAS CAD — your DWG is the map.')}</p>
           </div>
           {session.user && (
             <div className="col" style={{ alignItems: 'flex-end', gap: 4 }}>
@@ -141,7 +141,7 @@ export function StartScreen() {
                     <div className="row"><Icon name="folder" /><h4 className="grow">{p.name}</h4>
                       {can('project.manage') && <button className="icon-btn" style={{ minWidth: 32, height: 32 }} title="Delete project" onClick={async (e) => {
                         e.stopPropagation();
-                        if (await confirmDialog('Delete project', `Delete "${p.name}" and all its drawings, versions, FTTH data, photos and notes from this device?`, true, 'Delete')) { await deleteProject(p.id); refresh(); }
+                        if (await confirmDialog('Delete project', `Delete "${p.name}" and all its drawings and versions from this device?`, true, 'Delete')) { await deleteProject(p.id); refresh(); }
                       }}><Icon name="trash" /></button>}
                     </div>
                     {p.code && <div className="small muted">Code: {p.code}</div>}

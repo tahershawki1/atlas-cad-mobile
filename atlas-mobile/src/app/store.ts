@@ -3,9 +3,9 @@ import type { NewEntityStyle } from '../cad/tools/types';
 import { defaultSnapSettings, type SnapSettings } from '../cad/tools/snap';
 
 export type PanelId =
-  | 'layers' | 'draw' | 'edit' | 'text' | 'props' | 'ftth' | 'search' | 'measure' | 'gps' | 'calib'
-  | 'survey' | 'notes' | 'photos' | 'project' | 'versions' | 'export' | 'reports' | 'maintenance'
-  | 'users' | 'sync' | 'settings' | 'more' | 'compare' | 'qr' | 'info' | null;
+  | 'layers' | 'draw' | 'edit' | 'text' | 'props' | 'search' | 'measure' | 'gps' | 'calib'
+  | 'project' | 'versions' | 'export'
+  | 'users' | 'sync' | 'settings' | 'more' | 'update' | 'info' | null;
 
 export interface Toast { id: number; text: string; kind: 'info' | 'error' | 'success' }
 

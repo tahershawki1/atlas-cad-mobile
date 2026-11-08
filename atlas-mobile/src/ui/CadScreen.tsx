@@ -10,26 +10,23 @@ import { GpsPill } from './gps/GpsPill';
 import { InfoCard } from './InfoCard';
 import { fmt } from './common';
 import './panels/register';
-import { NavHud } from './ftth/integration';
+import { NavHud } from './NavHud';
 import { LayoutTabs } from './LayoutTabs';
 import { useT } from '../app/i18n';
 import { useIsPhone } from './useDevice';
 
-/** phone: the 5 field essentials + More (everything else lives in the More grid) */
-const PHONE_DOCK: PanelId[] = ['layers', 'draw', 'edit', 'ftth', 'gps', 'more'];
+/** phone: the 5 CAD essentials + More (everything else lives in the More grid) */
+const PHONE_DOCK: PanelId[] = ['layers', 'draw', 'edit', 'gps', 'more'];
 
 export const DOCK: { id: PanelId; label: string; icon: string }[] = [
   { id: 'layers', label: 'Layers', icon: 'layers' },
   { id: 'draw', label: 'Draw', icon: 'draw' },
   { id: 'edit', label: 'Edit', icon: 'edit' },
   { id: 'text', label: 'Text', icon: 'text' },
-  { id: 'ftth', label: 'FTTH', icon: 'fiber' },
   { id: 'search', label: 'Search', icon: 'search' },
   { id: 'measure', label: 'Measure', icon: 'measure' },
   { id: 'gps', label: 'GPS', icon: 'gps' },
-  { id: 'survey', label: 'Survey', icon: 'survey' },
-  { id: 'notes', label: 'Notes', icon: 'note' },
-  { id: 'photos', label: 'Photos', icon: 'photo' },
+  { id: 'update', label: 'Update', icon: 'sync' },
   { id: 'more', label: 'More', icon: 'more' },
 ];
 
@@ -42,7 +39,7 @@ function TopBar() {
       <div className="brand" onClick={() => s.set({ panel: s.panel === 'project' ? null : 'project' })} title="Project">
         <Logo />
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, lineHeight: 1.15 }}>
-          <span className="pname">{s.projectName || 'FiberLens'}</span>
+          <span className="pname">{s.projectName || 'ATLAS CAD'}</span>
           <span className="dname">{s.drawingName}{s.dirty ? ' •' : ''}</span>
         </div>
       </div>

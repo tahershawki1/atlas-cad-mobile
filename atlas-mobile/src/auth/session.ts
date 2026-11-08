@@ -3,16 +3,16 @@ import { db, uid, type Role, type UserRow } from '../data/db';
 
 export type Permission =
   | 'view' | 'export' | 'measure'
-  | 'field.edit' | 'calibrate'
-  | 'cad.edit' | 'ftth.edit'
+  | 'calibrate'
+  | 'cad.edit'
   | 'version.manage' | 'project.manage' | 'users.manage' | 'reports';
 
 export const ROLE_PERMS: Record<Role, Permission[]> = {
   viewer: ['view', 'export', 'measure'],
-  technician: ['view', 'export', 'measure', 'field.edit', 'calibrate'],
-  designer: ['view', 'export', 'measure', 'field.edit', 'calibrate', 'cad.edit', 'ftth.edit', 'reports'],
-  engineer: ['view', 'export', 'measure', 'field.edit', 'calibrate', 'cad.edit', 'ftth.edit', 'version.manage', 'reports', 'project.manage'],
-  admin: ['view', 'export', 'measure', 'field.edit', 'calibrate', 'cad.edit', 'ftth.edit', 'version.manage', 'reports', 'project.manage', 'users.manage'],
+  technician: ['view', 'export', 'measure', 'calibrate'],
+  designer: ['view', 'export', 'measure', 'calibrate', 'cad.edit', 'reports'],
+  engineer: ['view', 'export', 'measure', 'calibrate', 'cad.edit', 'version.manage', 'reports', 'project.manage'],
+  admin: ['view', 'export', 'measure', 'calibrate', 'cad.edit', 'version.manage', 'reports', 'project.manage', 'users.manage'],
 };
 
 export const ROLE_LABEL: Record<Role, string> = { admin: 'Admin', engineer: 'Engineer', designer: 'Designer', technician: 'Field Technician', viewer: 'Viewer' };

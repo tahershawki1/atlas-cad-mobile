@@ -109,7 +109,7 @@ export function SyncPanel() {
   return (
     <div>
       <div className="card small" style={{ marginBottom: 10 }}>
-        FiberLens works fully offline. Every change is queued locally (with a hybrid logical clock) and pushed when a server is reachable. Conflicts: newest write wins per record; the other version is kept for review. With a passphrase, payloads are end-to-end encrypted (AES-256-GCM) before leaving the device.
+        ATLAS CAD works fully offline. Every change is queued locally (with a hybrid logical clock) and pushed when a server is reachable. Conflicts: newest write wins per record; the other version is kept for review. With a passphrase, payloads are end-to-end encrypted (AES-256-GCM) before leaving the device.
       </div>
       <div className="kv small" style={{ marginBottom: 10 }}>
         <div>Network</div><div>{online ? <span className="badge ok">online</span> : <span className="badge warn">offline</span>}</div>
@@ -121,7 +121,7 @@ export function SyncPanel() {
       <div className="field"><label>End-to-end passphrase (optional, same on all devices)</label><input type="password" value={cfg.passphrase ?? ''} onChange={(e) => save({ ...cfg, passphrase: e.target.value })} /></div>
       <label className="row"><input type="checkbox" checked={cfg.enabled} onChange={(e) => save({ ...cfg, enabled: e.target.checked })} /> Auto-sync when online</label>
       <div className="row" style={{ marginTop: 10 }}>
-        <button className="btn primary" disabled={busy || !cfg.url || !can('field.edit')} onClick={async () => {
+        <button className="btn primary" disabled={busy || !cfg.url || !can('cad.edit')} onClick={async () => {
           setBusy(true);
           try { const r = await syncNow(); toast(`Sync: pushed ${r.pushed}, pulled ${r.pulled}${r.conflicts ? `, ${r.conflicts} conflicts` : ''}`, 'success'); }
           catch (e) { toast((e as Error).message, 'error'); }
