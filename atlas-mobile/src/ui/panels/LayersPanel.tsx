@@ -88,6 +88,18 @@ export function LayersPanel() {
     doc.setLayers(doc.drawing.layers.filter((x) => x.name !== l.name), 'Delete layer');
   };
 
+  const deleteUnused = async () => {
+    // layers referenced from inside block definitions can never be deleted
+    const blockLayers = new Set<string>();
+    for (const b of Object.values(doc.blocks)) for (const e of b.entities) blockLayers.add(e.layer);
+    const unused = doc.drawing.layers.filter((l) => l.name !== '0' && !(counts.get(l.name) ?? 0) && !blockLayers.has(l.name));
+    if (!unused.length) { useApp.getState().toast('No empty layers to delete', 'info'); return; }
+    if (!(await confirmDialog('Delete unused layers', `Delete ${unused.length} empty layer(s)?`, true, 'Delete all'))) return;
+    doc.setLayers(doc.drawing.layers.filter((l) => !unused.some((u) => u.name === l.name)), `Delete ${unused.length} unused layers`);
+    if (unused.some((u) => u.name === style.layer)) useApp.getState().set({ style: { ...style, layer: '0' } });
+    useApp.getState().toast(`Deleted ${unused.length} empty layer(s)`, 'success');
+  };
+
   const moveSelectionTo = (name: string) => {
     const sel = app.selection?.list ?? [];
     const ents = sel.map((id) => doc.get(id)!).filter((e) => e && doc.isEditable(e));
@@ -113,6 +125,7 @@ export function LayersPanel() {
         <button className="btn sm" onClick={() => setAll({ on: true, frozen: false })}>All on</button>
         <button className="btn sm" onClick={unisolate}>Unisolate</button>
         <button className="btn sm" onClick={() => setAll({ locked: false })}>Unlock all</button>
+        {editable && <button className="btn sm" style={{ color: 'var(--danger, #e5534b)' }} title="Delete all empty layers" onClick={deleteUnused}><Icon name="trash" /> Delete unused</button>}
         <span className="muted small">Current: <b>{style.layer}</b></span>
       </div>
       <div className="list">
