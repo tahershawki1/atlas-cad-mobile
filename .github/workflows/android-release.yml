@@ -40,15 +40,13 @@ jobs:
       - name: Sync Android
         working-directory: atlas-mobile
         run: npx cap sync android
-      - name: Build debug APK
+      - name: Build release APK
         working-directory: atlas-mobile/android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
       - name: Publish release APK
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            atlas-mobile/android/app/build/outputs/apk/debug/app-debug.apk
+            atlas-mobile/android/app/build/outputs/apk/release/app-release.apk
           fail_on_unmatched_files: false
           generate_release_notes: true
