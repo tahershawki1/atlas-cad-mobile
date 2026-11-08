@@ -42,7 +42,9 @@ jobs:
         run: npx cap sync android
       - name: Build release APK
         working-directory: atlas-mobile/android
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
       - name: Publish release APK
         uses: softprops/action-gh-release@v2
         with:
