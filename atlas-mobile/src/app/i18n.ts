@@ -17,8 +17,7 @@ const AR: Record<string, string> = {
   // start screen
   'ATLAS CAD — your DWG is the map.': 'ATLAS CAD — ملف الـDWG هو الخريطة.',
   'Open DWG / DXF': 'فتح DWG / DXF', 'New blank project': 'مشروع جديد فارغ', Projects: 'المشاريع', 'No projects yet.': 'لا توجد مشاريع بعد.',
-  'Add drawing': 'إضافة رسم', 'Sign out': 'تسجيل الخروج', 'Sign in': 'تسجيل الدخول', Username: 'اسم المستخدم', Password: 'كلمة المرور',
-  'Display name': 'الاسم الظاهر', 'Create the administrator account': 'إنشاء حساب المدير', 'Create & continue': 'إنشاء ومتابعة',
+  'Add drawing': 'إضافة رسم',
   'Drop a DWG or DXF file here. The original is stored read-only; you always edit a project copy.': 'اسحب ملف DWG أو DXF هنا. يتم حفظ الملف الأصلي للقراءة فقط وتتم التعديلات دائمًا على نسخة المشروع.',
   // common actions
   Start: 'تشغيل', Stop: 'إيقاف', Save: 'حفظ', Cancel: 'إلغاء', Delete: 'حذف', Close: 'إغلاق', Apply: 'تطبيق', Zoom: 'تكبير',
