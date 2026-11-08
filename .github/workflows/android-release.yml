@@ -45,9 +45,20 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
+      - name: Resolve release tag
+        id: release-tag
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "tag_name=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          else
+            version=$(node -p "require('./atlas-mobile/package.json').version")
+            echo "tag_name=v$version" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish release APK
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.release-tag.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
           files: |
             atlas-mobile/android/app/build/outputs/apk/release/app-release.apk
           fail_on_unmatched_files: false
