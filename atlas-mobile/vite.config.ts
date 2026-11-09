@@ -36,7 +36,10 @@ export default defineConfig({
   plugins: [react(), serviceWorker()],
   base: './',
   worker: { format: 'es' },
-  build: { target: 'es2022', chunkSizeWarningLimit: 4000, sourcemap: false },
+  // Keep the bundled CAD worker unminified. Esbuild minification corrupts
+  // numeric DXF entity coordinates in the production worker (the same file
+  // parses correctly in dev and in an unminified production build).
+  build: { target: 'es2022', chunkSizeWarningLimit: 4000, sourcemap: false, minify: false },
   server: { port: 5180, fs: { strict: false } },
   test: { environment: 'node', include: ['tests/**/*.test.ts'] },
 } as any);
