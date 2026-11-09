@@ -353,11 +353,12 @@ export class ToolManager {
         if (!dn.moved && dist > TOUCH_SLOP_PX) {
           dn.moved = true;
           clearTimeout(this.longPressTimer);
-          // DWG: if cannot single-move, single finger feeds the tool, not the camera
-          // In Edit mode, a single-finger drag in Select is a window/grip
-          // gesture, not a map pan. View mode explicitly enables one-finger pan.
-          const panAllowed = canMove && (this.isSingleMove || this.bFullScreen || this.active?.id === 'pan' || this.active?.id === 'zoom');
-          const toolDrag = this.active && (toolWantsDrag || this.longPressArmed || (!panAllowed && (this.active.id !== 'select' || !this.isSingleMove)));
+          // In Select mode a normal one-finger drag navigates the map in both
+          // View and Edit modes. Window/grip selection is deliberate and only
+          // starts after the long-press has armed the drag. Active CAD commands
+          // still receive their own drag gestures when appropriate.
+          const panAllowed = this.active?.id === 'select' || (canMove && (this.isSingleMove || this.bFullScreen || this.active?.id === 'pan' || this.active?.id === 'zoom'));
+          const toolDrag = this.active && (toolWantsDrag || this.longPressArmed || (!panAllowed && this.active.id !== 'select'));
           if (dn.mode === 'none') {
             dn.mode = toolDrag ? 'drag' : 'pan';
             if (dn.mode === 'pan') this.lastSnap = null;
